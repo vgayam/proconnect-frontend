@@ -4,6 +4,7 @@
 // Landing page with hero section, search, and featured professionals.
 // =============================================================================
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { Button, Badge } from "@/components/ui";
 import { SearchBar, ProfessionalCard } from "@/components/features";
@@ -39,7 +40,11 @@ export default function HomePage() {
 
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto mb-8">
-              <SearchBar placeholder="Search by skill, name, or service..." />
+              <Suspense fallback={
+                <div className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+              }>
+                <SearchBar placeholder="Search by skill, name, or service..." />
+              </Suspense>
             </div>
 
             {/* Popular Skills */}
