@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input, Button, Badge } from "@/components/ui";
 import { Search, SlidersHorizontal, X } from "lucide-react";
@@ -29,6 +29,18 @@ export interface SearchBarProps {
  * <SearchBar showFilters placeholder="Search by name or skill..." />
  */
 export function SearchBar({
+  showFilters = false,
+  placeholder = "Search professionals by name, skill, or service...",
+  className,
+}: SearchBarProps) {
+  return (
+    <Suspense fallback={<div className="h-12 bg-gray-100 rounded-lg animate-pulse" />}>
+      <SearchBarInner showFilters={showFilters} placeholder={placeholder} className={className} />
+    </Suspense>
+  );
+}
+
+function SearchBarInner({
   showFilters = false,
   placeholder = "Search professionals by name, skill, or service...",
   className,

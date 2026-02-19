@@ -4,7 +4,6 @@
 // Landing page with hero section, search, and featured professionals.
 // =============================================================================
 
-import { Suspense } from "react";
 import Link from "next/link";
 import { Button, Badge } from "@/components/ui";
 import { ModernSearchBar, ProfessionalCard } from "@/components/features";
@@ -39,14 +38,7 @@ export default function HomePage() {
 
             {/* Modern Search Bar */}
             <div className="max-w-4xl mx-auto">
-              <Suspense fallback={
-                <div className="space-y-3">
-                  <div className="h-5 w-48 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-14 bg-gray-100 rounded-lg animate-pulse" />
-                </div>
-              }>
-                <ModernSearchBar />
-              </Suspense>
+              <ModernSearchBar />
             </div>
 
             {/* CTA Buttons */}

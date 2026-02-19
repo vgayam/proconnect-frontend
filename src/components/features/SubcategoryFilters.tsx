@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui";
 import { useServiceCategories } from "@/hooks/useCategories";
@@ -20,6 +20,14 @@ interface SubcategoryFiltersProps {
 }
 
 export function SubcategoryFilters({ selectedCategory, totalCount = 0 }: SubcategoryFiltersProps) {
+  return (
+    <Suspense fallback={<div className="h-40 bg-gray-100 rounded-lg animate-pulse" />}>
+      <SubcategoryFiltersInner selectedCategory={selectedCategory} totalCount={totalCount} />
+    </Suspense>
+  );
+}
+
+function SubcategoryFiltersInner({ selectedCategory, totalCount = 0 }: SubcategoryFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { subcategoriesByCategory, categories } = useServiceCategories();

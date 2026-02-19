@@ -6,12 +6,12 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, MapPin, ChevronDown, X } from "lucide-react";
 import { useServiceCategories } from "@/hooks/useCategories";
 
-export function ModernSearchBar() {
+function ModernSearchBarInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { categories, isLoading: isCategoriesLoading } = useServiceCategories();
@@ -198,3 +198,15 @@ export function ModernSearchBar() {
   );
 }
 
+export function ModernSearchBar() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-3">
+        <div className="h-5 w-48 bg-gray-200 rounded animate-pulse" />
+        <div className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+      </div>
+    }>
+      <ModernSearchBarInner />
+    </Suspense>
+  );
+}
