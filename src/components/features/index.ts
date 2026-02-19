@@ -13,3 +13,13 @@ export type { ContactModalProps } from "./ContactModal";
 
 export { SocialLinks } from "./SocialLinks";
 export type { SocialLinksProps } from "./SocialLinks";
+
+export { PopularCategories } from "./PopularCategories";
+
+export { CategoryBadges } from "./CategoryBadges";
+
+export { SubcategoryFilters } from "./SubcategoryFilters";
+
+export { SmartSearchBar } from "./SmartSearchBar";
+
+export { ModernSearchBar } from "./ModernSearchBar";

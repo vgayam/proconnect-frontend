@@ -1,27 +1,39 @@
 // =============================================================================
 // LIST YOUR SERVICE PAGE
 // =============================================================================
-// Form for professionals to create their profile and list services.
+// Onboarding wizard for professionals to create their profile and list services.
 // =============================================================================
 
 import { ListServiceForm } from "./ListServiceForm";
 
+export const metadata = {
+  title: "Join as a Professional — ProConnect",
+  description: "Create your professional profile and start connecting with clients today.",
+};
+
 export default function ListServicePage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-primary-50 via-white to-white">
+      {/* Top banner */}
+      <div className="bg-primary-600 text-white text-center py-3 text-sm font-medium tracking-wide">
+        🎉 Join thousands of professionals already on ProConnect — it&apos;s free to list
+      </div>
+
+      <div className="container mx-auto px-4 py-10">
+        <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              List Your Services
+          <div className="text-center mb-10">
+            <span className="inline-block px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-semibold uppercase tracking-widest mb-4">
+              Professional Onboarding
+            </span>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              Grow your business with ProConnect
             </h1>
-            <p className="text-lg text-gray-600">
-              Create your professional profile and start connecting with clients today.
+            <p className="text-gray-500 text-base">
+              Set up your profile in a few minutes and start getting discovered by clients near you.
             </p>
           </div>
 
-          {/* Form */}
           <ListServiceForm />
         </div>
       </div>

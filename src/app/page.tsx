@@ -7,8 +7,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Button, Badge } from "@/components/ui";
-import { SearchBar, ProfessionalCard } from "@/components/features";
-import { MOCK_PROFESSIONALS, POPULAR_SKILLS } from "@/lib/data";
+import { ModernSearchBar, ProfessionalCard } from "@/components/features";
+import { MOCK_PROFESSIONALS } from "@/lib/data";
 import { ArrowRight, Users, Shield, Zap, Star } from "lucide-react";
 
 export default function HomePage() {
@@ -20,63 +20,40 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-20 lg:py-28">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-6xl mx-auto">
             {/* Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Find the Perfect{" "}
-              <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                Professional
-              </span>{" "}
-              for Any Job
-            </h1>
+            <div className="text-center mb-10">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
+                Find the Perfect{" "}
+                <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                  Professional
+                </span>{" "}
+                for Any Job
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                Connect with skilled professionals — <span className="text-gray-800 font-medium">plumbers, electricians, carpenters, photographers, hair stylists, interior designers</span>, and many more. Browse profiles, check reviews, and hire with confidence.
+              </p>
+            </div>
 
-            {/* Subheadline */}
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Connect with plumbers, electricians, photographers, designers, carpenters, and more.
-              Browse profiles, check reviews, and reach out directly.
-            </p>
-
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto mb-8">
+            {/* Modern Search Bar */}
+            <div className="max-w-4xl mx-auto">
               <Suspense fallback={
-                <div className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                <div className="space-y-3">
+                  <div className="h-5 w-48 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+                </div>
               }>
-                <SearchBar placeholder="Search by skill, name, or service..." />
+                <ModernSearchBar />
               </Suspense>
             </div>
 
-            {/* Popular Skills */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
-              <span className="text-sm text-gray-500">Popular:</span>
-              {[
-                { id: "p1", name: "Plumbing" },
-                { id: "p2", name: "Electrical Work" },
-                { id: "p3", name: "Photography" },
-                { id: "p4", name: "Carpentry" },
-                { id: "p5", name: "Graphic Design" },
-                { id: "p6", name: "Home Repair" },
-              ].map((skill) => (
-                <Link key={skill.id} href={`/professionals?skills=${skill.name}`}>
-                  <Badge variant="outline" className="hover:bg-gray-100 cursor-pointer">
-                    {skill.name}
-                  </Badge>
-                </Link>
-              ))}
-            </div>
-
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/professionals">
-                <Button size="xl">
-                  Browse Professionals
-                  <ArrowRight className="h-5 w-5" />
-                </Button>
-              </Link>
+            <div className="flex items-center justify-center mt-6">
               <Link href="/list-service">
-                <Button variant="outline" size="xl">
-                  List Your Services
+                <Button variant="outline" size="lg">
+                  Are you a professional? List Your Services
                 </Button>
               </Link>
             </div>

@@ -10,7 +10,7 @@ import { useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input, Button, Badge } from "@/components/ui";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { POPULAR_SKILLS } from "@/lib/data";
+import { usePopularSkills } from "@/hooks/useCategories";
 import { debounce } from "@/lib/utils";
 
 export interface SearchBarProps {
@@ -42,6 +42,9 @@ export function SearchBar({
   );
   const [showFilterPanel, setShowFilterPanel] = useState(showFilters);
   const [availableOnly, setAvailableOnly] = useState(searchParams.get("available") === "true");
+  
+  // Fetch popular subcategories from backend
+  const { popularSubcategories } = usePopularSkills(20);
 
   // Debounced search
   const debouncedSearch = useCallback(
@@ -162,16 +165,16 @@ export function SearchBar({
 
           {/* Popular Skills */}
           <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Popular Skills</h4>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Popular Specializations</h4>
             <div className="flex flex-wrap gap-2">
-              {POPULAR_SKILLS.map((skill) => (
+              {popularSubcategories.map((subcategory) => (
                 <Badge
-                  key={skill.id}
-                  variant={selectedSkills.includes(skill.name) ? "primary" : "outline"}
-                  onClick={() => toggleSkill(skill.name)}
+                  key={subcategory.id}
+                  variant={selectedSkills.includes(subcategory.name) ? "primary" : "outline"}
+                  onClick={() => toggleSkill(subcategory.name)}
                   className="cursor-pointer"
                 >
-                  {skill.name}
+                  {subcategory.name}
                 </Badge>
               ))}
             </div>

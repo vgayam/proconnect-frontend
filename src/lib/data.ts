@@ -491,6 +491,7 @@ export const MOCK_PROFESSIONALS: Professional[] = [
 
 /**
  * Get a professional by ID
+ * Mock version - use API version from api.ts for real backend
  */
 export function getProfessionalById(id: string): Professional | undefined {
   return MOCK_PROFESSIONALS.find((p) => p.id === id);
@@ -498,7 +499,7 @@ export function getProfessionalById(id: string): Professional | undefined {
 
 /**
  * Search professionals by query and filters
- * This simulates what your backend API would do
+ * Mock version - use API version from api.ts for real backend
  */
 export function searchProfessionals(params: {
   query?: string;
@@ -534,3 +535,16 @@ export function searchProfessionals(params: {
 
   return results;
 }
+
+// =============================================================================
+// API INTEGRATION
+// =============================================================================
+// To switch from mock data to real API:
+// 1. Import functions from './api' instead of using the functions above
+// 2. Update pages to use async/await with the API functions
+// 3. Handle loading and error states
+//
+// Example:
+// import { getProfessionals } from './api';
+// const professionals = await getProfessionals({ query: 'plumber' });
+// =============================================================================

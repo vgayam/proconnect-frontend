@@ -108,16 +108,23 @@ export function ProfessionalCard({ professional, className }: ProfessionalCardPr
               )}
             </div>
 
-            {/* Skills */}
+            {/* Skills with Category */}
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {skills.slice(0, 5).map((skill) => (
+              {/* Show category badge first if available */}
+              {skills.length > 0 && skills[0].category && (
+                <Badge variant="primary" size="sm" className="font-semibold">
+                  {skills[0].category}
+                </Badge>
+              )}
+              {/* Then show individual skills */}
+              {skills.slice(0, 4).map((skill) => (
                 <Badge key={skill.id} variant="default" size="sm">
                   {skill.name}
                 </Badge>
               ))}
-              {skills.length > 5 && (
+              {skills.length > 4 && (
                 <Badge variant="outline" size="sm">
-                  +{skills.length - 5} more
+                  +{skills.length - 4} more
                 </Badge>
               )}
             </div>

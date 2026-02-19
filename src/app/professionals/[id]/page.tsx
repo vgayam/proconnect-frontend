@@ -6,7 +6,7 @@
 
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { getProfessionalById } from "@/lib/data";
+import { getProfessionalById } from "@/lib/api";
 import { formatLocation, formatPriceRange } from "@/lib/utils";
 import { Avatar, Badge, Card, CardContent } from "@/components/ui";
 import { SocialLinks } from "@/components/features";
@@ -26,7 +26,13 @@ interface ProfilePageProps {
 
 export default async function ProfessionalProfilePage({ params }: ProfilePageProps) {
   const { id } = await params;
-  const professional = getProfessionalById(id);
+  
+  let professional;
+  try {
+    professional = await getProfessionalById(id);
+  } catch (error) {
+    notFound();
+  }
 
   if (!professional) {
     notFound();
@@ -223,33 +229,53 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
 
           {/* Right Column - Sidebar */}
           <div className="space-y-6">
-            {/* Skills */}
+            {/* Skills & Categories */}
             <Card>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Skills & Expertise
+              </h2>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <Badge key={skill.id} variant="default" size="md">
-                      {skill.name}
-                      {skill.yearsOfExperience && (
-                        <span className="text-gray-400 ml-1">
-                          · {skill.yearsOfExperience}y
-                        </span>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
+                {/* Group skills by category */}
+                {(() => {
+                  const skillsByCategory = skills.reduce((acc, skill) => {
+                    const category = skill.category || 'Other';
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(skill);
+                    return acc;
+                  }, {} as Record<string, typeof skills>);
+
+                  return (
+                    <div className="space-y-4">
+                      {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+                        <div key={category}>
+                          <Badge variant="primary" size="md" className="mb-2">
+                            {category}
+                          </Badge>
+                          <div className="flex flex-wrap gap-2">
+                            {categorySkills.map((skill) => (
+                              <Badge key={skill.id} variant="default" size="md">
+                                {skill.name}
+                                {skill.yearsOfExperience && (
+                                  <span className="text-gray-400 ml-1">
+                                    · {skill.yearsOfExperience}y
+                                  </span>
+                                )}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
             {/* Quick Contact Card */}
             <Card className="bg-primary-50 border-primary-100">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Interested in working together?
+                Interested? Contact to see details
               </h2>
-              <p className="text-sm text-gray-600 mb-4">
-                Send a message to discuss your project and get a quote.
-              </p>
               <ContactButton professional={professional} fullWidth />
             </Card>
           </div>

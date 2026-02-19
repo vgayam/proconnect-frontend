@@ -83,6 +83,11 @@ export interface Professional {
     remote: boolean; // Available for remote work
   };
 
+  // Contact Info
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+
   // Professional Details
   skills: Skill[];
   services: Service[];
@@ -108,12 +113,13 @@ export interface Professional {
  * Search parameters for finding professionals
  */
 export interface SearchParams {
-  query?: string; // Free text search (name, skills, etc.)
-  skills?: string[]; // Filter by specific skills
-  location?: string; // City, state, or country
-  remote?: boolean; // Filter for remote-available professionals
-  available?: boolean; // Filter for currently available
-  minRating?: number; // Minimum rating filter
+  query?: string;
+  category?: string; // Filter by main category
+  skills?: string[];
+  location?: string;
+  remote?: boolean;
+  available?: boolean;
+  minRating?: number;
   priceMin?: number;
   priceMax?: number;
   sortBy?: SortOption;

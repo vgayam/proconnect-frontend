@@ -28,7 +28,7 @@ export function ContactButton({ professional, fullWidth = false }: ContactButton
         className={fullWidth ? "w-full" : ""}
       >
         <MessageCircle className="h-5 w-5" />
-        Contact {professional.firstName}
+        Contact
       </Button>
 
       <ContactModal
