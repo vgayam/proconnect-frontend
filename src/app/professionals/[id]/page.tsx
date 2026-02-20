@@ -271,13 +271,6 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
               </CardContent>
             </Card>
 
-            {/* Quick Contact Card */}
-            <Card className="bg-primary-50 border-primary-100">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                Interested? Contact to see details
-              </h2>
-              <ContactButton professional={professional} fullWidth />
-            </Card>
           </div>
         </div>
       </div>

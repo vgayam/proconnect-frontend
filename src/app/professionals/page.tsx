@@ -12,6 +12,7 @@ interface SearchPageProps {
   searchParams: Promise<{
     q?: string;
     category?: string;
+    location?: string;
     subcategories?: string;
     skills?: string;
     available?: string;
@@ -23,6 +24,7 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
   // Parse search params
   const query = resolvedParams.q || "";
   const category = resolvedParams.category || "";
+  const location = resolvedParams.location || "";
   const subcategories = resolvedParams.subcategories?.split(",").filter(Boolean) || [];
   const skills = resolvedParams.skills?.split(",").filter(Boolean) || [];
   const available = resolvedParams.available === "true";
@@ -31,6 +33,7 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
   const professionals = await getProfessionals({
     query: query || undefined,
     category: category || undefined,
+    location: location || undefined,
     skills: [...skills, ...subcategories].length > 0 ? [...skills, ...subcategories] : undefined,
     available: available || undefined,
   });
@@ -62,6 +65,7 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
                 Showing <span className="font-semibold">{professionals.length}</span>{" "}
                 professional{professionals.length !== 1 ? "s" : ""}
                 {category && <> in <span className="font-semibold text-primary-600">{category}</span></>}
+                {location && <> near <span className="font-semibold text-primary-600">{location}</span></>}
                 {query && <> for &ldquo;<span className="font-semibold">{query}</span>&rdquo;</>}
               </>
             )}

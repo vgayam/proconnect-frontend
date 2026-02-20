@@ -5,21 +5,15 @@
 // =============================================================================
 
 import Link from "next/link";
-import { Button, Badge } from "@/components/ui";
-import { ModernSearchBar, ProfessionalCard } from "@/components/features";
-import { MOCK_PROFESSIONALS } from "@/lib/data";
-import { ArrowRight, Users, Shield, Zap, Star } from "lucide-react";
+import { Button } from "@/components/ui";
+import { ModernSearchBar } from "@/components/features";
+import { ArrowRight, Users, Shield, Zap, Search } from "lucide-react";
 
 export default function HomePage() {
-  // Get top-rated professionals for the featured section
-  const featuredProfessionals = MOCK_PROFESSIONALS.filter((p) => p.isAvailable)
-    .sort((a, b) => (b.rating || 0) - (a.rating || 0))
-    .slice(0, 3);
-
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-16 lg:py-24">
+      <section id="search" className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-secondary-50 py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             {/* Headline */}
@@ -112,34 +106,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Professionals Section */}
-      <section className="py-16 lg:py-24 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Featured Professionals
-              </h2>
-              <p className="text-lg text-gray-600">
-                Top-rated professionals ready to help with your needs.
-              </p>
-            </div>
-            <Link href="/professionals">
-              <Button variant="outline">
-                View All
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProfessionals.map((professional) => (
-              <ProfessionalCard key={professional.id} professional={professional} />
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-16 lg:py-24 bg-gradient-to-r from-primary-600 to-primary-700">
         <div className="container mx-auto px-4 text-center">
@@ -150,52 +116,22 @@ export default function HomePage() {
             Join thousands of people who have found the perfect professional for their needs.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/professionals">
+            <a href="#search">
               <Button size="xl" variant="secondary">
-                Find Professionals
-                <ArrowRight className="h-5 w-5" />
+                <Search className="h-5 w-5" />
+                Search Professionals
               </Button>
-            </Link>
-            <Link href="/list-service">
+            </a>
+            <Link href="/professionals">
               <Button size="xl" variant="outline" className="border-white text-white hover:bg-white/10">
-                List Your Services
+                Browse All
+                <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">
-                5,000+
-              </div>
-              <div className="text-gray-600">Professionals</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">
-                10,000+
-              </div>
-              <div className="text-gray-600">Connections Made</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">
-                4.8
-              </div>
-              <div className="text-gray-600">Average Rating</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-primary-600 mb-2">
-                50+
-              </div>
-              <div className="text-gray-600">Skill Categories</div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

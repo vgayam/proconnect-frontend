@@ -205,3 +205,18 @@ export async function createProfessional(data: any): Promise<Professional> {
     throw error;
   }
 }
+
+/**
+ * Get distinct cities that have professionals
+ */
+export async function getCities(): Promise<string[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/professionals/cities`, {
+      cache: 'no-store',
+    });
+    if (!response.ok) return [];
+    return await response.json();
+  } catch {
+    return [];
+  }
+}
