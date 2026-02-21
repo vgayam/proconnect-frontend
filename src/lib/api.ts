@@ -38,7 +38,9 @@ export async function getProfessionals(params?: SearchParams): Promise<Professio
     }
     
     const data = await response.json();
-    return data.map(mapProfessionalResponse);
+    // Backend returns a paginated wrapper: { results: [...], page, pageSize, total, totalPages }
+    const list = Array.isArray(data) ? data : (data.results ?? []);
+    return list.map(mapProfessionalResponse);
   } catch (error) {
     console.error('Error fetching professionals:', error);
     // Return empty array instead of throwing to prevent page crash

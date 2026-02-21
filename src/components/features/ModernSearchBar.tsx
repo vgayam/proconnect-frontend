@@ -11,33 +11,29 @@ import { getCities, getSkillCategories } from "@/lib/api";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   "Plumbing":          "🔧",
-  "Electrical Work":   "⚡",
+  "Electrical":        "⚡",
   "Photography":       "📷",
   "Carpentry":         "🪚",
   "Interior Design":   "🛋️",
   "Painting":          "🎨",
-  "Cleaning Services": "🧹",
-  "Personal Training": "💪",
-  "Tutoring":          "📚",
-  "Videography":       "🎬",
+  "Cleaning":          "🧹",
+  "Fitness":           "💪",
+  "Education":         "📚",
+  "Technology":        "💻",
   "HVAC":              "❄️",
   "Landscaping":       "🌿",
   "Pest Control":      "🐛",
   "Graphic Design":    "✏️",
-  "Music Lessons":     "🎵",
-  "Pet Care":          "🐾",
-  "Legal Services":    "⚖️",
-  "Accounting":        "📊",
-  "Real Estate":       "🏠",
-  "Event Planning":    "🎉",
-  "Catering":          "🍽️",
+  "Beauty & Wellness": "💆",
+  "Handyman":          "�",
+  "Vehicle":           "�",
 };
 
 // Priority order — most-searched categories shown first
 const CATEGORY_PRIORITY = [
-  "Plumbing", "Electrical Work", "Carpentry", "Cleaning Services",
-  "Photography", "Interior Design", "Painting", "Personal Training",
-  "Graphic Design", "Tutoring",
+  "Plumbing", "Electrical", "Carpentry", "Cleaning",
+  "Photography", "Interior Design", "Painting", "Fitness",
+  "Graphic Design", "Education",
 ];
 
 function ModernSearchBarInner() {
