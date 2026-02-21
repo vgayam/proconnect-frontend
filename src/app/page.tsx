@@ -20,13 +20,13 @@ export default function HomePage() {
             <div className="text-center mb-10">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
                 Find the Perfect{" "}
-                <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">
                   Professional
                 </span>{" "}
                 for Any Job
               </h1>
-              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-                Connect with skilled professionals — <span className="text-gray-800 font-medium">plumbers, electricians, carpenters, photographers, hair stylists, interior designers</span>, and many more. Browse profiles, check reviews, and hire with confidence.
+              <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto">
+                Browse verified professionals, check reviews, and hire with confidence — all in one place.
               </p>
             </div>
 
@@ -37,10 +37,8 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div className="flex items-center justify-center mt-6">
-              <Link href="/list-service">
-                <Button variant="outline" size="lg">
-                  Are you a professional? List Your Services
-                </Button>
+              <Link href="/list-service" className="text-sm text-gray-500 hover:text-primary-600 transition-colors">
+                Are you a professional? <span className="font-medium text-primary-600 underline underline-offset-2">List your services →</span>
               </Link>
             </div>
           </div>
@@ -79,7 +77,7 @@ export default function HomePage() {
 
             {/* Feature 2 */}
             <div className="text-center p-6">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-secondary-100 text-secondary-600 mb-4">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-100 text-primary-600 mb-4">
                 <Zap className="h-7 w-7" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -117,7 +115,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="#search">
-              <Button size="xl" variant="secondary">
+              <Button size="xl" className="bg-white text-primary-600 hover:bg-primary-50 shadow-sm">
                 <Search className="h-5 w-5" />
                 Search Professionals
               </Button>

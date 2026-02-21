@@ -18,7 +18,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   "Painting":          "🎨",
   "Cleaning Services": "🧹",
   "Personal Training": "💪",
-  "Tutoring":          "�",
+  "Tutoring":          "📚",
   "Videography":       "🎬",
   "HVAC":              "❄️",
   "Landscaping":       "🌿",
@@ -30,8 +30,15 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   "Accounting":        "📊",
   "Real Estate":       "🏠",
   "Event Planning":    "🎉",
-  "Catering":          "�️",
+  "Catering":          "🍽️",
 };
+
+// Priority order — most-searched categories shown first
+const CATEGORY_PRIORITY = [
+  "Plumbing", "Electrical Work", "Carpentry", "Cleaning Services",
+  "Photography", "Interior Design", "Painting", "Personal Training",
+  "Graphic Design", "Tutoring",
+];
 
 function ModernSearchBarInner() {
   const router = useRouter();
@@ -42,6 +49,7 @@ function ModernSearchBarInner() {
   const [categories, setCategories] = useState<string[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
   // Load cities and categories from backend
@@ -187,18 +195,36 @@ function ModernSearchBarInner() {
       </div>
 
       {/* Quick category chips */}
-      <div className="flex flex-wrap gap-2 mt-4 justify-center">
-        {categories.map((label) => (
-          <button
-            key={label}
-            onClick={() => handleSearch("", label)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 font-medium shadow-sm hover:border-primary-400 hover:text-primary-600 hover:shadow-md transition-all duration-150"
-          >
-            <span>{CATEGORY_EMOJIS[label] ?? "🔍"}</span>
-            {label}
-          </button>
-        ))}
-      </div>
+      {categories.length > 0 && (() => {
+        const sorted = [
+          ...CATEGORY_PRIORITY.filter(c => categories.includes(c)),
+          ...categories.filter(c => !CATEGORY_PRIORITY.includes(c)).sort(),
+        ];
+        const visible = showAllCategories ? sorted : sorted.slice(0, 10);
+        const hidden = sorted.length - 10;
+        return (
+          <div className="flex flex-wrap gap-2 mt-4 justify-center">
+            {visible.map((label) => (
+              <button
+                key={label}
+                onClick={() => handleSearch("", label)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 font-medium shadow-sm hover:border-primary-400 hover:text-primary-600 hover:shadow-md transition-all duration-150"
+              >
+                <span>{CATEGORY_EMOJIS[label] ?? "🔍"}</span>
+                {label}
+              </button>
+            ))}
+            {!showAllCategories && hidden > 0 && (
+              <button
+                onClick={() => setShowAllCategories(true)}
+                className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-gray-100 border border-gray-200 rounded-full text-sm text-gray-500 font-medium hover:bg-gray-200 transition-all duration-150"
+              >
+                +{hidden} more
+              </button>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }
