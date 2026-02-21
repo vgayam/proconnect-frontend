@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, MapPin, ChevronDown, Loader2, Pencil } from "lucide-react";
+import { Search, MapPin, ChevronDown, Loader2 } from "lucide-react";
 import { getCities, getSkillCategories } from "@/lib/api";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
@@ -124,52 +124,49 @@ function ModernSearchBarInner() {
 
   return (
     <div className="w-full">
-      {/* Search bar — single unified pill */}
-      <div className="flex items-stretch w-full h-14 rounded-2xl border-2 border-gray-200 bg-white shadow-lg hover:border-primary-300 focus-within:border-primary-400 transition-all duration-200 overflow-visible">
+      {/* Search bar */}
+      <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
 
-        {/* Service search */}
-        <div className="flex flex-1 items-center pl-5 pr-3 gap-3 min-w-0">
+        {/* Service input */}
+        <div className="flex items-center gap-3 flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus-within:border-primary-400 focus-within:bg-white transition-all duration-200 min-w-0">
           <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="What service do you need?"
-            className="flex-1 min-w-0 text-base text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
-            autoComplete="off"
-          />
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-none mb-0.5">Service</span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="e.g. Plumber, Photographer…"
+              className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent w-full"
+              autoComplete="off"
+            />
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="w-px bg-gray-200 my-2.5 flex-shrink-0" />
-
-        {/* City picker */}
-        <div ref={cityRef} className="relative flex-shrink-0">
+        {/* Location input */}
+        <div ref={cityRef} className="relative flex-shrink-0 sm:w-56">
           <div
-            className="flex items-center h-full px-4 gap-2 cursor-text"
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 border transition-all duration-200 cursor-text h-full ${
+              showCityDropdown ? "border-primary-400 bg-white" : "border-gray-200 hover:border-gray-300"
+            }`}
             onClick={() => setShowCityDropdown(true)}
           >
             {detectingLocation
-              ? <Loader2 className="h-4 w-4 text-primary-400 animate-spin flex-shrink-0" />
-              : <MapPin className="h-4 w-4 text-primary-500 flex-shrink-0" />
+              ? <Loader2 className="h-5 w-5 text-primary-400 animate-spin flex-shrink-0" />
+              : <MapPin className="h-5 w-5 text-primary-500 flex-shrink-0" />
             }
-            <div className="flex flex-col justify-center min-w-[110px]">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider leading-none">
-                  {detectingLocation ? "Detecting…" : "Location"}
-                </span>
-                {city && !detectingLocation && (
-                  <Pencil className="h-2.5 w-2.5 text-primary-400" />
-                )}
-              </div>
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-none mb-0.5">
+                {detectingLocation ? "Detecting…" : "Location"}
+              </span>
               <input
                 type="text"
                 value={city}
                 onChange={(e) => { saveCity(e.target.value); setShowCityDropdown(true); }}
                 onFocus={() => setShowCityDropdown(true)}
                 placeholder="Any city"
-                className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent leading-tight mt-0.5 w-full"
+                className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent w-full"
                 autoComplete="off"
               />
             </div>
@@ -178,7 +175,7 @@ function ModernSearchBarInner() {
 
           {/* City dropdown */}
           {showCityDropdown && filteredCities.length > 0 && (
-            <div className="absolute top-full right-0 mt-2 w-52 bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-1 max-h-52 overflow-y-auto">
+            <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl z-50 py-1 max-h-52 overflow-y-auto">
               {city.trim() && !cities.some(c => c.toLowerCase() === city.toLowerCase()) && (
                 <button
                   className="w-full text-left px-4 py-2.5 text-sm text-primary-600 font-medium hover:bg-primary-50 flex items-center gap-2"
@@ -206,8 +203,9 @@ function ModernSearchBarInner() {
         <button
           type="button"
           onClick={() => handleSearch()}
-          className="px-7 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold text-sm transition-colors flex-shrink-0 rounded-r-[14px] my-[2px] mr-[2px]"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold text-sm rounded-xl transition-colors flex-shrink-0 sm:self-stretch"
         >
+          <Search className="h-4 w-4" />
           Search
         </button>
       </div>
