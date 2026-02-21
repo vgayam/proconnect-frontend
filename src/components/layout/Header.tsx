@@ -12,9 +12,7 @@ import { Button } from "@/components/ui";
 import { Menu, X, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_LINKS = [
-  { href: "/professionals", label: "Find Professionals" },
-];
+const NAV_LINKS: { href: string; label: string }[] = [];
 
 /**
  * Main site header with navigation
