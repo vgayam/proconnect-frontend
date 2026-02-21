@@ -125,6 +125,7 @@ export interface SearchParams {
   sortBy?: SortOption;
   page?: number;
   limit?: number;
+  pageSize?: number; // Backend expects pageSize
 }
 
 export type SortOption =

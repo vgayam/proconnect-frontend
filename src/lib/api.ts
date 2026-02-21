@@ -16,8 +16,10 @@ export async function getProfessionals(params?: SearchParams): Promise<Professio
     const query = new URLSearchParams();
     
     if (params?.query) query.set('q', params.query);
-    if (params?.category) query.set('categories', params.category); // backend expects 'categories'
-    if (params?.location) query.set('city', params.location);
+    if (params?.category) query.set('category', params.category); // backend expects 'category'
+    if (params?.location) query.set('city', params.location); // backend expects 'city'
+    if (params?.page !== undefined) query.set('page', String(params.page));
+    if (params?.pageSize !== undefined) query.set('pageSize', String(params.pageSize));
     if (params?.available) query.set('available', 'true');
     if (params?.skills && params.skills.length > 0) {
       query.set('skills', params.skills.join(','));
