@@ -1,16 +1,9 @@
-// =============================================================================
-// USE SERVICE CATEGORIES HOOK
-// =============================================================================
-// Centralized hook for fetching categories and subcategories from the backend.
-// Category = Main service type (e.g., "Plumbing", "Photography")
-// Subcategory = Specialization within category (e.g., "Residential Plumbing", "Portrait Photography")
-// Provides consistent data across all components with caching.
-// =============================================================================
+// Hook for fetching categories and subcategories from the backend.
+// Used by ListServiceForm.
 
 import { useEffect, useState } from 'react';
 import { getSkills, getSkillCategories } from '@/lib/api';
 import { Skill } from '@/types';
-import { SKILL_CATEGORIES, POPULAR_SKILLS } from '@/lib/data';
 
 interface ServiceCategoriesState {
   categories: string[];
@@ -37,11 +30,11 @@ export function useServiceCategories() {
       return cachedData;
     }
     
-    // Initial state with fallback data
+    // Initial state
     return {
-      categories: SKILL_CATEGORIES as unknown as string[],
+      categories: [],
       subcategoriesByCategory: [],
-      allSubcategories: POPULAR_SKILLS,
+      allSubcategories: [],
       isLoading: true,
       error: null,
     };
@@ -97,9 +90,9 @@ export function useServiceCategories() {
         
         if (isMounted) {
           setState({
-            categories: SKILL_CATEGORIES as unknown as string[],
+            categories: [],
             subcategoriesByCategory: [],
-            allSubcategories: POPULAR_SKILLS,
+            allSubcategories: [],
             isLoading: false,
             error: error as Error,
           });
@@ -117,50 +110,5 @@ export function useServiceCategories() {
   return state;
 }
 
-/**
- * Get subcategories for a specific category
- * Used for displaying filter options in search results
- */
-export function useSubcategoriesForCategory(category: string) {
-  const { subcategoriesByCategory, isLoading, error } = useServiceCategories();
-  
-  const categoryData = subcategoriesByCategory.find(c => c.category === category);
-  
-  return {
-    subcategories: categoryData?.subcategories || [],
-    isLoading,
-    error,
-  };
-}
-
-/**
- * Get popular subcategories (first N subcategories from the backend)
- * Used for search bar suggestions
- */
-export function usePopularSubcategories(limit = 20) {
-  const { allSubcategories, isLoading, error } = useServiceCategories();
-  
-  return {
-    popularSubcategories: allSubcategories.slice(0, limit),
-    isLoading,
-    error,
-  };
-}
-
-/**
- * Get popular categories (first N categories from the backend)
- * Used for home page category browsing
- */
-export function usePopularCategories(limit = 6) {
-  const { categories, isLoading, error } = useServiceCategories();
-  
-  return {
-    popularCategories: categories.slice(0, limit),
-    isLoading,
-    error,
-  };
-}
-
-// Legacy exports for backward compatibility
+// Alias for backward compatibility
 export const useCategories = useServiceCategories;
-export const usePopularSkills = usePopularSubcategories;
