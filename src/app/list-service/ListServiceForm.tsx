@@ -65,6 +65,7 @@ interface FormData {
   twitter: string;
   instagram: string;
   website: string;
+  serviceAreas: string[];
 }
 
 interface FieldError {
@@ -96,6 +97,7 @@ const initialFormData: FormData = {
   twitter: "",
   instagram: "",
   website: "",
+  serviceAreas: [],
 };
 
 const STEPS = [
@@ -190,6 +192,7 @@ export function ListServiceForm() {
   const [isSubmitting, setIsSubmitting]   = useState(false);
   const [submittedId, setSubmittedId]     = useState<string | null | undefined>(undefined);
   const [customSkillInput, setCustomSkillInput] = useState("");
+  const [serviceAreaInput, setServiceAreaInput] = useState("");
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
   const { categories, subcategoriesByCategory, isLoading: loadingCategories } = useCategories();
@@ -404,6 +407,7 @@ export function ListServiceForm() {
           <Step2
             formData={formData} errors={errors} update={update} clearError={clearError}
             isDetectingLocation={isDetectingLocation} detectLocation={detectLocation}
+            serviceAreaInput={serviceAreaInput} setServiceAreaInput={setServiceAreaInput}
           />
         )}
         {currentStep === 3 && (
@@ -536,13 +540,25 @@ function Step1({
 
 function Step2({
   formData, errors, update, clearError, isDetectingLocation, detectLocation,
+  serviceAreaInput, setServiceAreaInput,
 }: {
   formData: FormData; errors: FieldError;
   update: <K extends keyof FormData>(f: K, v: FormData[K]) => void;
   clearError: (f: string) => void;
   isDetectingLocation: boolean;
   detectLocation: () => void;
+  serviceAreaInput: string;
+  setServiceAreaInput: (v: string) => void;
 }) {
+  const addArea = (val: string) => {
+    const t = val.trim();
+    if (t && !formData.serviceAreas.includes(t))
+      update("serviceAreas", [...formData.serviceAreas, t]);
+    setServiceAreaInput("");
+  };
+  const removeArea = (area: string) =>
+    update("serviceAreas", formData.serviceAreas.filter((a) => a !== area));
+
   return (
     <div className="space-y-5">
       <div className="mb-2">
@@ -595,6 +611,51 @@ function Step2({
           error={errors.country}
         />
       </Field>
+
+      {/* Areas you serve */}
+      <div className="pt-4 border-t border-gray-100">
+        <p className="text-sm font-semibold text-gray-700 mb-0.5">
+          Areas you serve <span className="text-gray-400 font-normal">(optional)</span>
+        </p>
+        <p className="text-xs text-gray-400 mb-3">
+          Add cities or neighbourhoods outside your base location that you&apos;re willing to travel to.
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={serviceAreaInput}
+            onChange={(e) => setServiceAreaInput(e.target.value)}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" || e.key === ",") && serviceAreaInput.trim()) {
+                e.preventDefault();
+                addArea(serviceAreaInput);
+              }
+            }}
+            placeholder="e.g. Bengaluru, Chennai, Pune…"
+            className="flex-1 px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400"
+          />
+          <button
+            type="button"
+            onClick={() => serviceAreaInput.trim() && addArea(serviceAreaInput)}
+            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded-lg border border-gray-300 transition"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+        {formData.serviceAreas.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {formData.serviceAreas.map((area) => (
+              <span key={area} className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-50 border border-primary-200 text-primary-700 text-sm rounded-full font-medium">
+                <MapPin className="h-3 w-3" />
+                {area}
+                <button type="button" onClick={() => removeArea(area)} className="hover:text-red-500 transition ml-0.5">
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
