@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, MapPin, ChevronDown, Loader2 } from "lucide-react";
+import { Search, MapPin, ChevronDown, Loader2, Pencil } from "lucide-react";
 import { getCities, getSkillCategories } from "@/lib/api";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
@@ -39,8 +39,15 @@ const CATEGORY_PRIORITY = [
 function ModernSearchBarInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const CITY_CACHE_KEY = "proconnect_city";
+
+  // Seed city: URL param → localStorage cache → empty (geolocation will fill later)
+  const urlCity = searchParams.get("location") || "";
+  const cachedCity = typeof window !== "undefined"
+    ? (localStorage.getItem(CITY_CACHE_KEY) || "")
+    : "";
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [city, setCity] = useState(searchParams.get("location") || "");
+  const [city, setCity] = useState(urlCity || cachedCity);
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -48,13 +55,21 @@ function ModernSearchBarInner() {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
+  // Persist city selection to localStorage whenever it changes
+  const saveCity = (value: string) => {
+    setCity(value);
+    if (value.trim()) {
+      localStorage.setItem(CITY_CACHE_KEY, value.trim());
+    }
+  };
+
   // Load cities and categories from backend
   useEffect(() => {
     getCities().then(setCities);
     getSkillCategories().then(setCategories);
   }, []);
 
-  // Auto-detect location on mount if no location set
+  // Auto-detect location on mount ONLY if no cached/URL city
   useEffect(() => {
     if (city || !navigator.geolocation) return;
     setDetectingLocation(true);
@@ -71,7 +86,7 @@ function ModernSearchBarInner() {
             data.address?.village ||
             data.address?.county ||
             "";
-          if (detectedCity) setCity(detectedCity);
+          if (detectedCity) saveCity(detectedCity);
         } catch {
           // silently fail
         } finally {
@@ -140,11 +155,18 @@ function ModernSearchBarInner() {
               : <MapPin className="h-4 w-4 text-primary-500 flex-shrink-0" />
             }
             <div className="flex flex-col justify-center min-w-[110px]">
-              <span className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider leading-none">Location</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-semibold text-primary-500 uppercase tracking-wider leading-none">
+                  {detectingLocation ? "Detecting…" : "Location"}
+                </span>
+                {city && !detectingLocation && (
+                  <Pencil className="h-2.5 w-2.5 text-primary-400" />
+                )}
+              </div>
               <input
                 type="text"
                 value={city}
-                onChange={(e) => { setCity(e.target.value); setShowCityDropdown(true); }}
+                onChange={(e) => { saveCity(e.target.value); setShowCityDropdown(true); }}
                 onFocus={() => setShowCityDropdown(true)}
                 placeholder="Any city"
                 className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent leading-tight mt-0.5 w-full"
@@ -170,7 +192,7 @@ function ModernSearchBarInner() {
                 <button
                   key={c}
                   className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2 transition-colors ${city === c ? "text-primary-600 font-semibold bg-primary-50" : "text-gray-700 hover:bg-gray-50"}`}
-                  onClick={() => { setCity(c); setShowCityDropdown(false); }}
+                  onClick={() => { saveCity(c); setShowCityDropdown(false); }}
                 >
                   <MapPin className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
                   {c}
