@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: "/professionals", label: "Find Professionals" },
   { href: "/list-service", label: "List Your Services" },
-  { href: "/for-professionals", label: "For Professionals" },
 ];
 
 /**

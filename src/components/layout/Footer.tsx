@@ -10,20 +10,15 @@ import { Briefcase, Twitter, Linkedin, Github } from "lucide-react";
 const FOOTER_LINKS = {
   platform: [
     { href: "/professionals", label: "Find Professionals" },
-    { href: "/services", label: "Browse Services" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/for-professionals", label: "For Professionals" },
+    { href: "/list-service", label: "List Your Services" },
   ],
   company: [
     { href: "/about", label: "About Us" },
-    { href: "/blog", label: "Blog" },
-    { href: "/careers", label: "Careers" },
     { href: "/contact", label: "Contact" },
   ],
   legal: [
     { href: "/privacy", label: "Privacy Policy" },
     { href: "/terms", label: "Terms of Service" },
-    { href: "/cookies", label: "Cookie Policy" },
   ],
 };
 
