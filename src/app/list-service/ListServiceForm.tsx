@@ -311,6 +311,7 @@ export function ListServiceForm() {
         hourlyRateMin: formData.hourlyRateMin ? parseFloat(formData.hourlyRateMin) : null,
         hourlyRateMax: formData.hourlyRateMax ? parseFloat(formData.hourlyRateMax) : null,
         currency:    formData.currency || "USD",
+        serviceAreas: formData.serviceAreas ?? [],
         isVerified:  false,
         isAvailable: true,
       };
