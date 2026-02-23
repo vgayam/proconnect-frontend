@@ -123,6 +123,19 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                           </Badge>
                         )}
                       </div>
+                      {serviceAreas && serviceAreas.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Navigation className="h-4 w-4 text-gray-400 shrink-0" />
+                          {serviceAreas.map((area) => (
+                            <span
+                              key={area}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                            >
+                              {area}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       {rating != null && (
                         <div className="flex items-center gap-1.5">
                           <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 shrink-0" />
@@ -288,29 +301,6 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
               )}
             </div>
 
-            {/* Areas Served */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Navigation className="h-5 w-5 text-primary-500" />
-                <h2 className="text-lg font-semibold text-gray-900">Areas Served</h2>
-              </div>
-
-              {serviceAreas && serviceAreas.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {serviceAreas.map((area) => (
-                    <span
-                      key={area}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"
-                    >
-                      <MapPin className="h-3 w-3 text-blue-400 shrink-0" />
-                      {area}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400">No service areas listed.</p>
-              )}
-            </div>
 
           </div>
         </div>
