@@ -100,6 +100,9 @@ export interface Professional {
   reviewCount?: number;
   hourlyRate?: PriceRange;
 
+  /** Areas / localities the professional serves — e.g. ["Indiranagar", "Koramangala"] */
+  serviceAreas?: string[];
+
   // Timestamps
   createdAt: string;
   updatedAt: string;

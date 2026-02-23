@@ -180,6 +180,7 @@ function mapProfessionalResponse(raw: any): Professional {
         : undefined,
     })),
     socialLinks: (raw.socialLinks ?? []).map((l: any) => ({ ...l, id: String(l.id) })),
+    serviceAreas: raw.serviceAreas ?? [],
   };
 }
 

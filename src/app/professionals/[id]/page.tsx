@@ -18,6 +18,9 @@ import {
   CheckCircle,
   Calendar,
   Briefcase,
+  Navigation,
+  Info,
+  IndianRupee,
 } from "lucide-react";
 
 interface ProfilePageProps {
@@ -50,6 +53,7 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
     skills,
     services,
     socialLinks,
+    serviceAreas,
     isVerified,
     isAvailable,
     rating,
@@ -60,7 +64,7 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Cover Image */}
-      <div className="relative h-48 md:h-64 bg-gradient-to-r from-primary-600 to-secondary-600">
+      <div className="relative h-52 md:h-72 bg-gradient-to-r from-primary-600 to-secondary-600">
         {coverImageUrl && (
           <Image
             src={coverImageUrl}
@@ -70,17 +74,17 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
             priority
           />
         )}
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/25" />
       </div>
 
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 max-w-6xl">
         {/* Profile Header */}
         <div className="relative -mt-16 md:-mt-20 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 md:p-8">
             <div className="flex flex-col md:flex-row gap-6">
               {/* Avatar */}
               <div className="flex-shrink-0 -mt-20 md:-mt-24">
-                <div className="rounded-xl border-4 border-white shadow-lg overflow-hidden">
+                <div className="rounded-2xl border-4 border-white shadow-xl overflow-hidden">
                   <Avatar
                     src={avatarUrl}
                     firstName={firstName}
@@ -93,56 +97,54 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
               </div>
 
               {/* Info */}
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                         {displayName}
                       </h1>
                       {isVerified && (
-                        <CheckCircle className="h-6 w-6 text-primary-500" />
+                        <span title="Verified Professional">
+                          <CheckCircle className="h-6 w-6 text-primary-500 shrink-0" />
+                        </span>
                       )}
                     </div>
-                    <p className="text-lg text-gray-600 mb-3">{headline}</p>
+                    <p className="text-lg text-gray-500 mb-4">{headline}</p>
 
                     {/* Meta info */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {formatLocation(location)}
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-500">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
+                        <span>{formatLocation(location)}</span>
                         {location.remote && (
                           <Badge variant="primary" size="sm" className="ml-1">
                             Remote
                           </Badge>
                         )}
                       </div>
-                      {rating && (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                          <span className="font-medium text-gray-900">
-                            {rating.toFixed(1)}
-                          </span>
-                          {reviewCount && (
-                            <span>({reviewCount} reviews)</span>
+                      {rating != null && (
+                        <div className="flex items-center gap-1.5">
+                          <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 shrink-0" />
+                          <span className="font-semibold text-gray-900">{rating.toFixed(1)}</span>
+                          {reviewCount != null && (
+                            <span className="text-gray-400">({reviewCount} reviews)</span>
                           )}
                         </div>
                       )}
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-4 w-4 text-gray-400 shrink-0" />
                         {isAvailable ? (
-                          <span className="text-green-600 font-medium">
-                            Available for work
-                          </span>
+                          <span className="text-green-600 font-medium">Available for work</span>
                         ) : (
-                          <span className="text-gray-500">Currently unavailable</span>
+                          <span className="text-gray-400">Currently unavailable</span>
                         )}
                       </div>
                     </div>
                   </div>
 
                   {/* CTA */}
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
                     <ContactButton professional={professional} />
                     {hourlyRate && (
                       <div className="text-center text-sm text-gray-500">
@@ -161,47 +163,53 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                 </div>
 
                 {/* Social Links */}
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <SocialLinks links={socialLinks} size="md" />
-                </div>
+                {socialLinks?.length > 0 && (
+                  <div className="mt-5 pt-4 border-t border-gray-100">
+                    <SocialLinks links={socialLinks} size="md" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-3 gap-8 pb-12">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* About */}
-            <Card>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">About</h2>
-              <CardContent>
-                <p className="text-gray-600 whitespace-pre-line">{bio}</p>
-              </CardContent>
-            </Card>
+        <div className="grid lg:grid-cols-3 gap-6 pb-16">
+          {/* ── Left Column ── */}
+          <div className="lg:col-span-2 space-y-6">
 
-            {/* Services */}
-            <Card>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-primary-500" />
-                  Services Offered
+            {/* About */}
+            {bio && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Info className="h-5 w-5 text-primary-500" />
+                  <h2 className="text-xl font-semibold text-gray-900">About</h2>
                 </div>
-              </h2>
-              <CardContent>
+                <p className="text-gray-600 leading-relaxed whitespace-pre-line">{bio}</p>
+              </div>
+            )}
+
+            {/* Services Offered */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Briefcase className="h-5 w-5 text-primary-500" />
+                <h2 className="text-xl font-semibold text-gray-900">Services Offered</h2>
+              </div>
+
+              {services && services.length > 0 ? (
                 <div className="space-y-4">
                   {services.map((service) => (
                     <div
                       key={service.id}
-                      className="p-4 rounded-lg border border-gray-200 hover:border-primary-200 transition-colors"
+                      className="group p-4 rounded-xl border border-gray-200 hover:border-primary-300 hover:bg-primary-50/30 transition-all duration-200"
                     >
                       <div className="flex items-start justify-between gap-4 mb-2">
-                        <h3 className="font-semibold text-gray-900">
+                        <h3 className="font-semibold text-gray-900 group-hover:text-primary-700 transition-colors">
                           {service.title}
                         </h3>
                         {service.priceRange && (
-                          <span className="text-primary-600 font-semibold whitespace-nowrap">
+                          <span className="flex items-center gap-0.5 text-primary-600 font-semibold whitespace-nowrap text-sm bg-primary-50 border border-primary-100 px-2.5 py-1 rounded-full">
+                            <IndianRupee className="h-3.5 w-3.5" />
                             {formatPriceRange(
                               service.priceRange.min,
                               service.priceRange.max,
@@ -211,36 +219,63 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                           </span>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm mb-2">
-                        {service.description}
-                      </p>
+                      {service.description && (
+                        <p className="text-gray-500 text-sm leading-relaxed mb-2">
+                          {service.description}
+                        </p>
+                      )}
                       {service.duration && (
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Calendar className="h-3 w-3" />
+                        <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                          <Calendar className="h-3.5 w-3.5" />
                           Typical duration: {service.duration}
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400 rounded-xl border-2 border-dashed border-gray-200">
+                  <Briefcase className="h-10 w-10 mb-3 text-gray-300" />
+                  <p className="text-sm font-medium">No services listed yet</p>
+                  <p className="text-xs mt-1">Check back soon or reach out directly</p>
+                </div>
+              )}
+            </div>
+
+            {/* Areas Served */}
+            {serviceAreas && serviceAreas.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <Navigation className="h-5 w-5 text-primary-500" />
+                  <h2 className="text-xl font-semibold text-gray-900">Areas Served</h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {serviceAreas.map((area) => (
+                    <span
+                      key={area}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                    >
+                      <MapPin className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Right Column - Sidebar */}
+          {/* ── Right Column / Sidebar ── */}
           <div className="space-y-6">
-            {/* Skills & Categories */}
-            <Card>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Skills & Expertise
-              </h2>
-              <CardContent>
-                {/* Group skills by category */}
-                {(() => {
+
+            {/* Skills & Expertise */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Skills & Expertise</h2>
+              {skills && skills.length > 0 ? (
+                (() => {
                   const skillsByCategory = skills.reduce((acc, skill) => {
-                    const category = skill.category || 'Other';
-                    if (!acc[category]) acc[category] = [];
-                    acc[category].push(skill);
+                    const cat = skill.category || 'Other';
+                    if (!acc[cat]) acc[cat] = [];
+                    acc[cat].push(skill);
                     return acc;
                   }, {} as Record<string, typeof skills>);
 
@@ -251,11 +286,11 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                           <Badge variant="primary" size="md" className="mb-2">
                             {category}
                           </Badge>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-2 mt-2">
                             {categorySkills.map((skill) => (
                               <Badge key={skill.id} variant="default" size="md">
                                 {skill.name}
-                                {skill.yearsOfExperience && (
+                                {skill.yearsOfExperience != null && (
                                   <span className="text-gray-400 ml-1">
                                     · {skill.yearsOfExperience}y
                                   </span>
@@ -267,9 +302,76 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                       ))}
                     </div>
                   );
-                })()}
-              </CardContent>
-            </Card>
+                })()
+              ) : (
+                <p className="text-sm text-gray-400">No skills listed.</p>
+              )}
+            </div>
+
+            {/* Quick Info card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Info</h2>
+              <ul className="space-y-3 text-sm">
+                <li className="flex items-center gap-3 text-gray-600">
+                  <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
+                  <span>{formatLocation(location)}</span>
+                </li>
+                {location.remote && (
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <Navigation className="h-4 w-4 text-gray-400 shrink-0" />
+                    <span>Available for remote work</span>
+                  </li>
+                )}
+                <li className="flex items-center gap-3 text-gray-600">
+                  <Clock className="h-4 w-4 text-gray-400 shrink-0" />
+                  {isAvailable ? (
+                    <span className="text-green-600 font-medium">Open for new projects</span>
+                  ) : (
+                    <span className="text-gray-400">Not available right now</span>
+                  )}
+                </li>
+                {hourlyRate && (
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <IndianRupee className="h-4 w-4 text-gray-400 shrink-0" />
+                    <span>
+                      {formatPriceRange(hourlyRate.min, hourlyRate.max, hourlyRate.currency)}/hr
+                    </span>
+                  </li>
+                )}
+                {rating != null && (
+                  <li className="flex items-center gap-3 text-gray-600">
+                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 shrink-0" />
+                    <span>
+                      <span className="font-semibold text-gray-900">{rating.toFixed(1)}</span>
+                      {reviewCount != null && (
+                        <span className="text-gray-400"> ({reviewCount} reviews)</span>
+                      )}
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* Areas Served — sidebar (mirrors left column on small sidebar) */}
+            {serviceAreas && serviceAreas.length > 0 && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:hidden">
+                <div className="flex items-center gap-2 mb-4">
+                  <Navigation className="h-5 w-5 text-primary-500" />
+                  <h2 className="text-lg font-semibold text-gray-900">Areas Served</h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {serviceAreas.map((area) => (
+                    <span
+                      key={area}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                    >
+                      <MapPin className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
         </div>
