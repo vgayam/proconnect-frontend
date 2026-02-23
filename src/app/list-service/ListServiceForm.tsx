@@ -182,6 +182,22 @@ function TextInput({
   );
 }
 
+// ─── Currency symbol lookup ────────────────────────────────────────────────────
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  INR: "₹",
+  EUR: "€",
+  GBP: "£",
+  AED: "د.إ",
+  SGD: "S$",
+  AUD: "A$",
+};
+
+function getCurrencySymbol(currency: string) {
+  return CURRENCY_SYMBOLS[currency] ?? currency;
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function ListServiceForm() {
@@ -862,7 +878,7 @@ function Step4({
               placeholder="500"
               value={formData.hourlyRateMin}
               onChange={(v) => { update("hourlyRateMin", v); clearError("hourlyRateMin"); }}
-              icon={<DollarSign className="h-4 w-4" />}
+              icon={<span className="text-sm font-medium text-gray-500">{getCurrencySymbol(formData.currency)}</span>}
             />
           </Field>
           <Field label={`Max rate / hr — optional`}>
@@ -871,7 +887,7 @@ function Step4({
               placeholder="2000"
               value={formData.hourlyRateMax}
               onChange={(v) => update("hourlyRateMax", v)}
-              icon={<DollarSign className="h-4 w-4" />}
+              icon={<span className="text-sm font-medium text-gray-500">{getCurrencySymbol(formData.currency)}</span>}
             />
           </Field>
         </div>
