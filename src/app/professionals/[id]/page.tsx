@@ -242,26 +242,6 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
               )}
             </div>
 
-            {/* Areas Served */}
-            {serviceAreas && serviceAreas.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center gap-2 mb-5">
-                  <Navigation className="h-5 w-5 text-primary-500" />
-                  <h2 className="text-xl font-semibold text-gray-900">Areas Served</h2>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {serviceAreas.map((area) => (
-                    <span
-                      key={area}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100"
-                    >
-                      <MapPin className="h-3.5 w-3.5 text-blue-400 shrink-0" />
-                      {area}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ── Right Column / Sidebar ── */}
@@ -308,53 +288,9 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
               )}
             </div>
 
-            {/* Quick Info card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Info</h2>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-center gap-3 text-gray-600">
-                  <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
-                  <span>{formatLocation(location)}</span>
-                </li>
-                {location.remote && (
-                  <li className="flex items-center gap-3 text-gray-600">
-                    <Navigation className="h-4 w-4 text-gray-400 shrink-0" />
-                    <span>Available for remote work</span>
-                  </li>
-                )}
-                <li className="flex items-center gap-3 text-gray-600">
-                  <Clock className="h-4 w-4 text-gray-400 shrink-0" />
-                  {isAvailable ? (
-                    <span className="text-green-600 font-medium">Open for new projects</span>
-                  ) : (
-                    <span className="text-gray-400">Not available right now</span>
-                  )}
-                </li>
-                {hourlyRate && (
-                  <li className="flex items-center gap-3 text-gray-600">
-                    <IndianRupee className="h-4 w-4 text-gray-400 shrink-0" />
-                    <span>
-                      {formatPriceRange(hourlyRate.min, hourlyRate.max, hourlyRate.currency)}/hr
-                    </span>
-                  </li>
-                )}
-                {rating != null && (
-                  <li className="flex items-center gap-3 text-gray-600">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 shrink-0" />
-                    <span>
-                      <span className="font-semibold text-gray-900">{rating.toFixed(1)}</span>
-                      {reviewCount != null && (
-                        <span className="text-gray-400"> ({reviewCount} reviews)</span>
-                      )}
-                    </span>
-                  </li>
-                )}
-              </ul>
-            </div>
-
-            {/* Areas Served — sidebar (mirrors left column on small sidebar) */}
+            {/* Areas Served — sidebar */}
             {serviceAreas && serviceAreas.length > 0 && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:hidden">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Navigation className="h-5 w-5 text-primary-500" />
                   <h2 className="text-lg font-semibold text-gray-900">Areas Served</h2>
