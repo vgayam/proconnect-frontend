@@ -31,8 +31,12 @@ export function ContactModal({ professional, isOpen, onClose }: ContactModalProp
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PHONE_RE = /^[+\d][\d\s\-().]{6,19}$/;
 
   const professionalName =
     professional.displayName ??
@@ -45,6 +49,7 @@ export function ContactModal({ professional, isOpen, onClose }: ContactModalProp
     setEmail("");
     setPhone("");
     setError(null);
+    setFieldErrors({});
     onClose();
   }
 
@@ -52,14 +57,32 @@ export function ContactModal({ professional, isOpen, onClose }: ContactModalProp
     e.preventDefault();
     setError(null);
 
+    // Per-field validation
+    const errs: typeof fieldErrors = {};
+
     if (!name.trim()) {
-      setError("Please enter your name.");
+      errs.name = "Name is required.";
+    }
+
+    const hasEmail = email.trim().length > 0;
+    const hasPhone = phone.trim().length > 0;
+
+    if (!hasEmail && !hasPhone) {
+      errs.email = "Provide at least an email or phone number.";
+    } else {
+      if (hasEmail && !EMAIL_RE.test(email.trim())) {
+        errs.email = "Enter a valid email address (e.g. you@example.com).";
+      }
+      if (hasPhone && !PHONE_RE.test(phone.trim())) {
+        errs.phone = "Enter a valid phone number (digits, spaces, +, – allowed).";
+      }
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
       return;
     }
-    if (!email.trim() && !phone.trim()) {
-      setError("Please provide at least an email or phone number.");
-      return;
-    }
+    setFieldErrors({});
 
     setIsSubmitting(true);
     try {
@@ -99,8 +122,8 @@ export function ContactModal({ professional, isOpen, onClose }: ContactModalProp
               type="text"
               placeholder="John Doe"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
+              onChange={(e) => { setName(e.target.value); setFieldErrors((p) => ({ ...p, name: undefined })); }}
+              error={fieldErrors.name}
               disabled={isSubmitting}
             />
           </div>
@@ -114,7 +137,8 @@ export function ContactModal({ professional, isOpen, onClose }: ContactModalProp
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: undefined })); }}
+              error={fieldErrors.email}
               disabled={isSubmitting}
             />
           </div>
@@ -128,7 +152,8 @@ export function ContactModal({ professional, isOpen, onClose }: ContactModalProp
               type="tel"
               placeholder="+91 98765 43210"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => { setPhone(e.target.value); setFieldErrors((p) => ({ ...p, phone: undefined })); }}
+              error={fieldErrors.phone}
               disabled={isSubmitting}
             />
           </div>
