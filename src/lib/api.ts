@@ -211,6 +211,107 @@ export async function createProfessional(data: any): Promise<Professional> {
   }
 }
 
+// =============================================================================
+// INQUIRY & REVIEW APIs
+// =============================================================================
+
+export interface InquiryRequest {
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface InquiryResponse {
+  inquiryId: number;
+  reviewToken: string;
+  professionalName: string;
+  message: string;
+}
+
+export interface TokenValidation {
+  valid: boolean;
+  professionalName: string | null;
+  professionalId: number | null;
+  message: string;
+}
+
+export interface ReviewRequest {
+  rating: number;
+  comment?: string;
+}
+
+export interface ReviewResponse {
+  id: number;
+  customerName: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+/**
+ * Create a booking inquiry (Step 1 of contact flow)
+ */
+export async function createInquiry(
+  professionalId: string | number,
+  data: InquiryRequest
+): Promise<InquiryResponse> {
+  const response = await fetch(`${API_URL}/api/inquiries/professionals/${professionalId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.text().catch(() => response.statusText);
+    throw new Error(err || 'Failed to create inquiry');
+  }
+  return response.json();
+}
+
+/**
+ * Validate a review token
+ */
+export async function validateReviewToken(token: string): Promise<TokenValidation> {
+  const response = await fetch(`${API_URL}/api/reviews/token/${token}`, {
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    const err = await response.text().catch(() => response.statusText);
+    throw new Error(err || 'Failed to validate token');
+  }
+  return response.json();
+}
+
+/**
+ * Submit a review via token
+ */
+export async function submitReview(token: string, data: ReviewRequest): Promise<ReviewResponse> {
+  const response = await fetch(`${API_URL}/api/reviews/token/${token}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const err = await response.text().catch(() => response.statusText);
+    throw new Error(err || 'Failed to submit review');
+  }
+  return response.json();
+}
+
+/**
+ * Get reviews for a professional
+ */
+export async function getReviews(professionalId: string | number): Promise<ReviewResponse[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/professionals/${professionalId}/reviews`, {
+      cache: 'no-store',
+    });
+    if (!response.ok) return [];
+    return response.json();
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Get distinct cities that have professionals
  */

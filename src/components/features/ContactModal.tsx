@@ -1,14 +1,18 @@
 // =============================================================================
 // CONTACT MODAL COMPONENT
 // =============================================================================
-// Modal form for contacting a professional.
+// Two-step contact flow:
+//   Step 1 — Collect visitor name + email/phone → create booking inquiry
+//   Step 2 — Show professional's contact details
 // =============================================================================
 
 "use client";
 
 import { useState } from "react";
-import { Modal, Button } from "@/components/ui";
+import { Modal, Button, Input } from "@/components/ui";
 import { Professional } from "@/types";
+import { createInquiry } from "@/lib/api";
+import { Mail, Phone, MessageCircle, CheckCircle } from "lucide-react";
 
 export interface ContactModalProps {
   professional: Professional;
@@ -16,47 +20,204 @@ export interface ContactModalProps {
   onClose: () => void;
 }
 
+type Step = "gate" | "details";
+
 /**
- * Contact modal for sending messages to professionals
- *
- * @example
- * <ContactModal professional={data} isOpen={isOpen} onClose={close} />
+ * Contact modal — gates professional contact details behind name + email/phone
+ * collection. Creates a booking inquiry so we can send a verified review link later.
  */
 export function ContactModal({ professional, isOpen, onClose }: ContactModalProps) {
+  const [step, setStep] = useState<Step>("gate");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+
+  const professionalName =
+    professional.displayName ??
+    `${professional.firstName} ${professional.lastName}`;
+
+  function handleClose() {
+    // Reset state on close
+    setStep("gate");
+    setName("");
+    setEmail("");
+    setPhone("");
+    setError(null);
+    onClose();
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+
+    if (!name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (!email.trim() && !phone.trim()) {
+      setError("Please provide at least an email or phone number.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await createInquiry(professional.id, {
+        name: name.trim(),
+        email: email.trim() || undefined,
+        phone: phone.trim() || undefined,
+      });
+      setStep("details");
+    } catch (err: any) {
+      setError(err?.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
-      title={"Contact Details"}
-      description={"Reach out directly using the details below."}
+      onClose={handleClose}
+      title={step === "gate" ? `Contact ${professionalName}` : "Contact Details"}
+      description={
+        step === "gate"
+          ? "Enter your details to unlock the professional's contact information."
+          : "Reach out directly using the details below."
+      }
       size="md"
     >
-      <div className="space-y-2 mb-4">
-        {professional.email && (
+      {step === "gate" ? (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div>
-            <span className="font-medium">Email:</span> <a href={`mailto:${professional.email}`} className="text-primary-600 underline">{professional.email}</a>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Your Name <span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="text"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={isSubmitting}
+            />
           </div>
-        )}
-        {professional.phone && (
+
+          {/* Email */}
           <div>
-            <span className="font-medium">Phone:</span> <a href={`tel:${professional.phone}`} className="text-primary-600 underline">{professional.phone}</a>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting}
+            />
           </div>
-        )}
-        {professional.whatsapp && (
+
+          {/* Phone */}
           <div>
-            <span className="font-medium">WhatsApp:</span> <a href={`https://wa.me/${professional.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">{professional.whatsapp}</a>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone / WhatsApp
+            </label>
+            <Input
+              type="tel"
+              placeholder="+91 98765 43210"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              disabled={isSubmitting}
+            />
           </div>
-        )}
-        {!(professional.email || professional.phone || professional.whatsapp) && (
-          <div className="text-gray-500">No contact details available.</div>
-        )}
-      </div>
-      <div className="flex justify-end pt-4">
-        <Button onClick={onClose}>Close</Button>
-      </div>
+
+          <p className="text-xs text-gray-400">
+            At least one of email or phone is required.
+          </p>
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <div className="flex gap-3 justify-end pt-2">
+            <Button type="button" variant="ghost" onClick={handleClose} disabled={isSubmitting}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Verifying…" : "Get Contact Details"}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <div className="space-y-4">
+          {/* Success banner */}
+          <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 text-sm">
+            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <span>Inquiry recorded! You may receive a review link after your interaction.</span>
+          </div>
+
+          {/* Contact details */}
+          <div className="space-y-3">
+            {professional.email && (
+              <a
+                href={`mailto:${professional.email}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors group"
+              >
+                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                  <Mail className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Email</p>
+                  <p className="text-sm font-semibold text-gray-800 truncate">{professional.email}</p>
+                </div>
+              </a>
+            )}
+            {professional.phone && (
+              <a
+                href={`tel:${professional.phone}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors group"
+              >
+                <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 group-hover:bg-green-100 transition-colors">
+                  <Phone className="w-4 h-4 text-green-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Phone</p>
+                  <p className="text-sm font-semibold text-gray-800">{professional.phone}</p>
+                </div>
+              </a>
+            )}
+            {professional.whatsapp && (
+              <a
+                href={`https://wa.me/${professional.whatsapp.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors group"
+              >
+                <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
+                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">WhatsApp</p>
+                  <p className="text-sm font-semibold text-gray-800">{professional.whatsapp}</p>
+                </div>
+              </a>
+            )}
+            {!(professional.email || professional.phone || professional.whatsapp) && (
+              <p className="text-sm text-gray-500 text-center py-4">
+                No contact details available.
+              </p>
+            )}
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button onClick={handleClose}>Done</Button>
+          </div>
+        </div>
+      )}
     </Modal>
   );
 }

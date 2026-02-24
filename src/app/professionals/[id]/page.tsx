@@ -6,7 +6,7 @@
 
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { getProfessionalById } from "@/lib/api";
+import { getProfessionalById, getReviews, type ReviewResponse } from "@/lib/api";
 import { formatLocation, formatPriceRange } from "@/lib/utils";
 import { Avatar, Badge, Card, CardContent } from "@/components/ui";
 import { SocialLinks } from "@/components/features";
@@ -21,6 +21,7 @@ import {
   Navigation,
   Info,
   IndianRupee,
+  MessageSquare,
 } from "lucide-react";
 
 interface ProfilePageProps {
@@ -40,6 +41,8 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
   if (!professional) {
     notFound();
   }
+
+  const reviews = await getReviews(id);
 
   const {
     firstName,
@@ -251,6 +254,59 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                   <Briefcase className="h-10 w-10 mb-3 text-gray-300" />
                   <p className="text-sm font-medium">No services listed yet</p>
                   <p className="text-xs mt-1">Check back soon or reach out directly</p>
+                </div>
+              )}
+            </div>
+
+            {/* Reviews */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <MessageSquare className="h-5 w-5 text-primary-500" />
+                <h2 className="text-xl font-semibold text-gray-900">Reviews</h2>
+                {reviews.length > 0 && (
+                  <span className="ml-auto text-sm text-gray-400">
+                    {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                  </span>
+                )}
+              </div>
+
+              {reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <span className="font-semibold text-gray-900 text-sm">{review.customerName}</span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(review.createdAt).toLocaleDateString("en-IN", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex gap-0.5 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${
+                              star <= review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "fill-gray-200 text-gray-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-gray-600 leading-relaxed">{review.comment}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400 rounded-xl border-2 border-dashed border-gray-200">
+                  <MessageSquare className="h-10 w-10 mb-3 text-gray-300" />
+                  <p className="text-sm font-medium">No reviews yet</p>
+                  <p className="text-xs mt-1">Be the first to leave a review after contacting</p>
                 </div>
               )}
             </div>
