@@ -127,23 +127,6 @@ function ModernSearchBarInner() {
       {/* Search bar */}
       <div className="flex flex-col sm:flex-row gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
 
-        {/* Service input */}
-        <div className="flex items-center gap-3 flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus-within:border-primary-400 focus-within:bg-white transition-all duration-200 min-w-0">
-          <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-none mb-0.5">Service</span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder="e.g. Plumber, Photographer…"
-              className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent w-full"
-              autoComplete="off"
-            />
-          </div>
-        </div>
-
         {/* Location input */}
         <div ref={cityRef} className="relative flex-shrink-0 sm:w-56">
           <div
@@ -197,6 +180,23 @@ function ModernSearchBarInner() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Service input */}
+        <div className="flex items-center gap-3 flex-1 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus-within:border-primary-400 focus-within:bg-white transition-all duration-200 min-w-0">
+          <Search className="h-5 w-5 text-gray-400 flex-shrink-0" />
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-none mb-0.5">Service</span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="e.g. Plumber, Photographer…"
+              className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent w-full"
+              autoComplete="off"
+            />
+          </div>
         </div>
 
         {/* Search button */}
