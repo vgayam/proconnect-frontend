@@ -11,7 +11,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import { Menu, X, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getMe, type AuthProfessional } from "@/lib/auth";
+import { getMe, getCachedMe, type AuthProfessional } from "@/lib/auth";
 
 const NAV_LINKS: { href: string; label: string }[] = [];
 
@@ -20,9 +20,15 @@ const NAV_LINKS: { href: string; label: string }[] = [];
  */
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [me, setMe] = useState<AuthProfessional | null | undefined>(undefined); // undefined = loading
+  // Seed immediately from localStorage cache → no flash to "Sign In"
+  const [me, setMe] = useState<AuthProfessional | null | undefined>(() => {
+    // undefined during SSR; cache value on client
+    if (typeof window === 'undefined') return undefined;
+    return getCachedMe(); // null = logged out, AuthProfessional = logged in
+  });
 
   useEffect(() => {
+    // Verify in the background and update if stale
     getMe().then(setMe).catch(() => setMe(null));
   }, []);
 

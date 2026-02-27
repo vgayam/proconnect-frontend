@@ -214,10 +214,10 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
   const { categories, subcategoriesByCategory, isLoading: loadingCategories } = useCategories();
   const customSkillRef = useRef<HTMLInputElement>(null);
 
-  // ── Edit mode: pre-fill from /api/auth/me ──────────────────────────────────
+  // ── Edit mode: pre-fill from /api/professionals/me (full profile) ───────────
   useEffect(() => {
     if (!isEdit) return;
-    fetch('/api/auth/me')
+    fetch('/api/professionals/me')
       .then((r) => r.ok ? r.json() : null)
       .then((d) => {
         if (!d) return;
@@ -234,7 +234,7 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
           country:          loc.country    ?? d.country ?? '',
           serviceAreas:     d.serviceAreas ?? [],
           selectedCategory: d.category     ?? '',
-          skills: (d.skills ?? []).map((s: { name: string }) => s.name),
+          skills: ((d.skills ?? d.subcategories ?? []) as { name: string }[]).map((s) => s.name),
           services: d.services?.length
             ? d.services.map((s: {
                 title: string; description: string;

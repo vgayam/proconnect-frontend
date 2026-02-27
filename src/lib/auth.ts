@@ -5,6 +5,7 @@
 // =============================================================================
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const CACHE_KEY = 'proconnect_me';
 
 export interface AuthProfessional {
   id: number;
@@ -16,6 +17,28 @@ export interface AuthProfessional {
   avatarUrl?: string;
   headline?: string;
 }
+
+// ── localStorage cache helpers (browser only) ──────────────────────────────
+
+export function getCachedMe(): AuthProfessional | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as AuthProfessional) : null;
+  } catch {
+    return null;
+  }
+}
+
+function setCachedMe(me: AuthProfessional | null) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (me) localStorage.setItem(CACHE_KEY, JSON.stringify(me));
+    else localStorage.removeItem(CACHE_KEY);
+  } catch { /* silent */ }
+}
+
+// ── Auth functions ──────────────────────────────────────────────────────────
 
 /** Step 1 — request OTP (proxied through Next.js API route) */
 export async function requestOtp(email: string): Promise<{ message: string }> {
@@ -42,18 +65,26 @@ export async function verifyOtp(email: string, otp: string): Promise<AuthProfess
     const data = await res.json().catch(() => ({}));
     throw new Error(data.error || 'Invalid or expired OTP');
   }
-  return res.json();
+  const me = await res.json() as AuthProfessional;
+  setCachedMe(me);
+  return me;
 }
 
-/** Fetch the currently logged-in professional */
+/** Fetch the currently logged-in professional (and refresh cache) */
 export async function getMe(): Promise<AuthProfessional | null> {
   const res = await fetch('/api/auth/me', { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+  if (!res.ok) {
+    setCachedMe(null);
+    return null;
+  }
+  const me = await res.json() as AuthProfessional;
+  setCachedMe(me);
+  return me;
 }
 
-/** Log out — clears the cookie via Next.js API route */
+/** Log out — clears cookie and local cache */
 export async function logout(): Promise<void> {
+  setCachedMe(null);
   await fetch('/api/auth/logout', { method: 'POST' });
 }
 
