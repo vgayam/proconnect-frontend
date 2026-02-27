@@ -141,7 +141,7 @@ function ModernSearchBarInner() {
             }
             <div className="flex flex-col flex-1 min-w-0">
               <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider leading-none mb-0.5">
-                {detectingLocation ? "Detecting…" : "Location"}
+                {detectingLocation ? "Detecting…" : "City"}
               </span>
               <input
                 type="text"
