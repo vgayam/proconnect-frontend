@@ -1,5 +1,7 @@
 // =============================================================================
 // AUTH API — professional OTP login helpers
+// All calls go through Next.js API routes (/api/auth/*) so cookies are
+// set on the same domain (Vercel) instead of cross-domain from Render.
 // =============================================================================
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -15,13 +17,12 @@ export interface AuthProfessional {
   headline?: string;
 }
 
-/** Step 1 — request OTP to be sent to email */
+/** Step 1 — request OTP (proxied through Next.js API route) */
 export async function requestOtp(email: string): Promise<{ message: string }> {
-  const res = await fetch(`${API_URL}/api/auth/request-otp`, {
+  const res = await fetch('/api/auth/request-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
-    credentials: 'include',
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -30,13 +31,12 @@ export async function requestOtp(email: string): Promise<{ message: string }> {
   return res.json();
 }
 
-/** Step 2 — verify OTP, backend sets HttpOnly cookie on success */
+/** Step 2 — verify OTP, Next.js API route sets same-domain HttpOnly cookie */
 export async function verifyOtp(email: string, otp: string): Promise<AuthProfessional> {
-  const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
+  const res = await fetch('/api/auth/verify-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, otp }),
-    credentials: 'include',
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -45,20 +45,24 @@ export async function verifyOtp(email: string, otp: string): Promise<AuthProfess
   return res.json();
 }
 
-/** Fetch the currently logged-in professional (reads JWT cookie) */
+/** Fetch the currently logged-in professional */
 export async function getMe(): Promise<AuthProfessional | null> {
-  const res = await fetch(`${API_URL}/api/auth/me`, {
-    credentials: 'include',
-    cache: 'no-store',
-  });
+  const res = await fetch('/api/auth/me', { cache: 'no-store' });
   if (!res.ok) return null;
   return res.json();
 }
 
-/** Log out — clears the JWT cookie on the backend */
+/** Log out — clears the cookie via Next.js API route */
 export async function logout(): Promise<void> {
-  await fetch(`${API_URL}/api/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
+  await fetch('/api/auth/logout', { method: 'POST' });
+}
+
+/** Direct backend call with Bearer token (for server components / dashboard) */
+export async function getMeFromBackend(token: string): Promise<AuthProfessional | null> {
+  const res = await fetch(`${API_URL}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
   });
+  if (!res.ok) return null;
+  return res.json();
 }
