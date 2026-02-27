@@ -57,10 +57,18 @@ export function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             {me === undefined ? null : me ? (
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
-                  Dashboard
-                </Button>
+              <Link href="/dashboard" className="flex items-center gap-2 group">
+                <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold select-none group-hover:bg-primary-700 transition">
+                  {(me.displayName ?? '')
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w) => w[0].toUpperCase())
+                    .join('') || '?'}
+                </span>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition">
+                  {(me.displayName ?? '').split(' ')[0]}
+                </span>
               </Link>
             ) : (
               <Link href="/login">
@@ -109,10 +117,16 @@ export function Header() {
           ))}
           <hr className="my-2" />
           {me ? (
-            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="ghost" className="justify-start w-full">
-                Dashboard
-              </Button>
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 py-2">
+              <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold select-none">
+                {(me.displayName ?? '')
+                  .split(' ')
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((w) => w[0].toUpperCase())
+                  .join('') || '?'}
+              </span>
+              <span className="text-sm font-medium text-gray-700">{me.displayName?.split(' ')[0] ?? 'Dashboard'}</span>
             </Link>
           ) : (
             <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>

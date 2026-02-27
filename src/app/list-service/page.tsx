@@ -1,10 +1,12 @@
 // =============================================================================
 // LIST YOUR SERVICE PAGE
 // =============================================================================
-// Onboarding wizard for professionals to create their profile and list services.
+// Onboarding wizard for professionals to create/edit their profile.
+// ?edit=true → pre-fills from API and submits via PUT instead of POST.
 // =============================================================================
 
-import { ListServiceForm } from "./ListServiceForm";
+import { Suspense } from "react";
+import { ListServiceFormWrapper } from "./ListServiceFormWrapper";
 
 export const metadata = {
   title: "Join as a Professional — ProConnect",
@@ -34,7 +36,9 @@ export default function ListServicePage() {
             </p>
           </div>
 
-          <ListServiceForm />
+          <Suspense fallback={<div className="h-96 flex items-center justify-center"><div className="h-8 w-8 rounded-full border-4 border-primary-600 border-t-transparent animate-spin" /></div>}>
+            <ListServiceFormWrapper />
+          </Suspense>
         </div>
       </div>
     </div>

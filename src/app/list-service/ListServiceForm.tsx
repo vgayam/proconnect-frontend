@@ -6,7 +6,7 @@
 // 5-step guided wizard: BasicInfo → Location → Skills → Pricing → Links
 // =============================================================================
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createProfessional } from "@/lib/api";
 import { useCategories } from "@/hooks/useCategories";
@@ -200,7 +200,7 @@ function getCurrencySymbol(currency: string) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function ListServiceForm() {
+export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
   const router = useRouter();
   const [currentStep, setCurrentStep]     = useState(1);
   const [formData, setFormData]           = useState<FormData>(initialFormData);
@@ -213,6 +213,56 @@ export function ListServiceForm() {
 
   const { categories, subcategoriesByCategory, isLoading: loadingCategories } = useCategories();
   const customSkillRef = useRef<HTMLInputElement>(null);
+
+  // ── Edit mode: pre-fill from /api/auth/me ──────────────────────────────────
+  useEffect(() => {
+    if (!isEdit) return;
+    fetch('/api/auth/me')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (!d) return;
+        const loc = d.location ?? {};
+        const socialLinks: { platform: string; url: string }[] = d.socialLinks ?? [];
+        const getLink = (p: string) => socialLinks.find((l) => l.platform === p)?.url ?? '';
+        setFormData({
+          firstName:        d.firstName    ?? '',
+          lastName:         d.lastName     ?? '',
+          headline:         d.headline     ?? '',
+          bio:              d.bio          ?? '',
+          city:             loc.city       ?? d.city    ?? '',
+          state:            loc.state      ?? d.state   ?? '',
+          country:          loc.country    ?? d.country ?? '',
+          serviceAreas:     d.serviceAreas ?? [],
+          selectedCategory: d.category     ?? '',
+          skills: (d.skills ?? []).map((s: { name: string }) => s.name),
+          services: d.services?.length
+            ? d.services.map((s: {
+                title: string; description: string;
+                priceMin: number; priceMax: number;
+                priceUnit: string; duration: string;
+              }) => ({
+                title:       s.title       ?? '',
+                description: s.description ?? '',
+                priceMin:    s.priceMin    != null ? String(s.priceMin) : '',
+                priceMax:    s.priceMax    != null ? String(s.priceMax) : '',
+                priceUnit:   s.priceUnit   ?? 'per project',
+                duration:    s.duration    ?? '',
+              }))
+            : initialFormData.services,
+          hourlyRateMin: d.hourlyRateMin != null ? String(d.hourlyRateMin) : '',
+          hourlyRateMax: d.hourlyRateMax != null ? String(d.hourlyRateMax) : '',
+          currency:      d.currency ?? 'USD',
+          email:         d.email     ?? '',
+          phone:         d.phone     ?? '',
+          whatsapp:      d.whatsapp  ?? '',
+          linkedin:      getLink('linkedin'),
+          twitter:       getLink('twitter'),
+          instagram:     getLink('instagram'),
+          website:       getLink('website'),
+        });
+      })
+      .catch(() => {/* silent */});
+  }, [isEdit]);
   const update = <K extends keyof FormData>(field: K, value: FormData[K]) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -332,10 +382,25 @@ export function ListServiceForm() {
         isAvailable: true,
       };
 
-      const created = await createProfessional(payload);
-      setSubmittedId(created?.id ?? null);
+      if (isEdit) {
+        // Update existing profile via proxy (reads cookie server-side)
+        const res = await fetch('/api/professionals/me', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `Error ${res.status}`);
+        }
+        setSubmittedId('__updated__');
+      } else {
+        // Create new profile
+        const created = await createProfessional(payload);
+        setSubmittedId(created?.id ?? null);
+      }
     } catch (err) {
-      console.error("Error creating professional profile:", err);
+      console.error("Error saving professional profile:", err);
       setErrors({ _submit: "Something went wrong. Please try again." });
     } finally {
       setIsSubmitting(false);
@@ -344,6 +409,30 @@ export function ListServiceForm() {
 
   // ─── Success Screen ────────────────────────────────────────────────────────
   if (submittedId !== undefined && !isSubmitting) {
+    // ── Edit mode success ──
+    if (isEdit) {
+      return (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-14 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 text-green-500 mb-6">
+            <CheckCircle className="h-10 w-10" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile updated! ✓</h2>
+          <p className="text-gray-500 text-sm max-w-sm mx-auto mb-8">
+            Your changes are live and visible to clients.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition"
+            >
+              ← Back to Dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Create mode success ──
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-14 text-center">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 text-green-500 mb-6">
@@ -354,7 +443,7 @@ export function ListServiceForm() {
           Your profile is submitted and will be visible to clients shortly. Start sharing your profile link!
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          {submittedId && (
+          {submittedId && submittedId !== '__updated__' && (
             <button
               onClick={() => router.push(`/professionals/${submittedId}`)}
               className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition"
