@@ -6,11 +6,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { Menu, X, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getMe, type AuthProfessional } from "@/lib/auth";
 
 const NAV_LINKS: { href: string; label: string }[] = [];
 
@@ -19,6 +20,11 @@ const NAV_LINKS: { href: string; label: string }[] = [];
  */
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [me, setMe] = useState<AuthProfessional | null | undefined>(undefined); // undefined = loading
+
+  useEffect(() => {
+    getMe().then(setMe).catch(() => setMe(null));
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -50,11 +56,19 @@ export function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </Link>
+            {me === undefined ? null : me ? (
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+            )}
             <Link href="/list-service">
               <Button size="sm">List Your Services</Button>
             </Link>
@@ -94,11 +108,19 @@ export function Header() {
             </Link>
           ))}
           <hr className="my-2" />
-          <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button variant="ghost" className="justify-start w-full">
-              Sign In
-            </Button>
-          </Link>
+          {me ? (
+            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+              <Button variant="ghost" className="justify-start w-full">
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+              <Button variant="ghost" className="justify-start w-full">
+                Sign In
+              </Button>
+            </Link>
+          )}
           <Link href="/list-service">
             <Button className="mt-2 w-full">List Your Services</Button>
           </Link>
