@@ -36,6 +36,15 @@ const CATEGORY_PRIORITY = [
   "Graphic Design", "Education",
 ];
 
+const SEARCH_PLACEHOLDERS = [
+  "Plumber near Indiranagar…",
+  "Plumber",
+  "Carpenter in Koramangala…",
+  "Carpenter",
+  "Electrician in Bandra…",
+  "Electrician",
+];
+
 function ModernSearchBarInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -54,6 +63,15 @@ function ModernSearchBarInner() {
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
+
+  // Rotating placeholder
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % SEARCH_PLACEHOLDERS.length);
+    }, 2500);
+    return () => clearInterval(id);
+  }, []);
 
   // Persist city selection to localStorage whenever it changes
   const saveCity = (value: string) => {
@@ -192,7 +210,7 @@ function ModernSearchBarInner() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              placeholder="e.g. Plumber, Photographer…"
+              placeholder={SEARCH_PLACEHOLDERS[placeholderIdx]}
               className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent w-full"
               autoComplete="off"
             />

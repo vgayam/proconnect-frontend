@@ -50,9 +50,11 @@ export function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Sign In
+              </Button>
+            </Link>
             <Link href="/list-service">
               <Button size="sm">List Your Services</Button>
             </Link>
@@ -92,9 +94,11 @@ export function Header() {
             </Link>
           ))}
           <hr className="my-2" />
-          <Button variant="ghost" className="justify-start">
-            Sign In
-          </Button>
+          <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+            <Button variant="ghost" className="justify-start w-full">
+              Sign In
+            </Button>
+          </Link>
           <Link href="/list-service">
             <Button className="mt-2 w-full">List Your Services</Button>
           </Link>
