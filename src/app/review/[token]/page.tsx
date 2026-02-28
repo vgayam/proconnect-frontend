@@ -23,7 +23,8 @@ export default function ReviewPage() {
     async function checkToken() {
       try {
         const res = await fetch(`/api/review/${token}`, { cache: "no-store" });
-        const result: TokenValidation = await res.json();
+        const text = await res.text();
+        const result: TokenValidation = text ? JSON.parse(text) : { valid: false, professionalName: null, professionalId: null, message: "Empty response from server." };
         setValidation(result);
       } catch {
         setValidation({ valid: false, professionalName: null, professionalId: null, message: "Failed to validate link." });
