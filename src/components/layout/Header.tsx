@@ -12,7 +12,6 @@ import { Button } from "@/components/ui";
 import { Menu, X, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getMe, getCachedMe, type AuthProfessional } from "@/lib/auth";
-
 const NAV_LINKS: { href: string; label: string }[] = [];
 
 /**
@@ -28,6 +27,14 @@ export function Header() {
     const cached = getCachedMe();
     if (cached) setMe(cached);
     getMe().then(setMe).catch(() => setMe(null));
+
+    // Re-sync whenever login or logout fires
+    const onAuthChange = () => {
+      const fresh = getCachedMe();
+      setMe(fresh);
+    };
+    window.addEventListener('proconnect:auth-change', onAuthChange);
+    return () => window.removeEventListener('proconnect:auth-change', onAuthChange);
   }, []);
 
   return (

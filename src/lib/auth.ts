@@ -18,6 +18,14 @@ export interface AuthProfessional {
   headline?: string;
 }
 
+// ── Auth-change event (notifies Header without a full page reload) ──────────
+
+export function dispatchAuthChange() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('proconnect:auth-change'));
+  }
+}
+
 // ── localStorage cache helpers (browser only) ──────────────────────────────
 
 export function getCachedMe(): AuthProfessional | null {
@@ -67,6 +75,7 @@ export async function verifyOtp(email: string, otp: string): Promise<AuthProfess
   }
   const me = await res.json() as AuthProfessional;
   setCachedMe(me);
+  dispatchAuthChange();
   return me;
 }
 
@@ -85,6 +94,7 @@ export async function getMe(): Promise<AuthProfessional | null> {
 /** Log out — clears cookie and local cache */
 export async function logout(): Promise<void> {
   setCachedMe(null);
+  dispatchAuthChange();
   await fetch('/api/auth/logout', { method: 'POST' });
 }
 
