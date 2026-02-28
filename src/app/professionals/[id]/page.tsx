@@ -4,9 +4,10 @@
 // Detailed view of a professional's profile with services and contact.
 // =============================================================================
 
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { getProfessionalById, getReviews, type ReviewResponse } from "@/lib/api";
+import { getProfessionalByIdOrSlug, getReviews, type ReviewResponse } from "@/lib/api";
 import { formatLocation, formatPriceRange } from "@/lib/utils";
 import { Avatar, Badge, Card, CardContent } from "@/components/ui";
 import { SocialLinks } from "@/components/features";
@@ -28,12 +29,54 @@ interface ProfilePageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
+  const { id } = await params;
+  try {
+    const p = await getProfessionalByIdOrSlug(id);
+    const name = p.displayName || `${p.firstName} ${p.lastName}`;
+    const location = p.location ? formatLocation(p.location) : null;
+    const title = [name, p.headline].filter(Boolean).join(" — ");
+    const description =
+      p.bio?.slice(0, 155) ||
+      [
+        `${name} is a verified professional on ProConnect`,
+        location ? `based in ${location}` : null,
+      ]
+        .filter(Boolean)
+        .join(", ") + ".";
+    const canonical = p.slug ? `/professionals/${p.slug}` : `/professionals/${id}`;
+
+    return {
+      title: `${title} | ProConnect`,
+      description,
+      openGraph: {
+        title: `${name} | ProConnect`,
+        description,
+        type: "profile",
+        url: canonical,
+        ...(p.avatarUrl
+          ? { images: [{ url: p.avatarUrl, alt: name }] }
+          : {}),
+      },
+      twitter: {
+        card: "summary",
+        title: `${name} | ProConnect`,
+        description,
+        ...(p.avatarUrl ? { images: [p.avatarUrl] } : {}),
+      },
+      alternates: { canonical },
+    };
+  } catch {
+    return { title: "Professional | ProConnect" };
+  }
+}
+
 export default async function ProfessionalProfilePage({ params }: ProfilePageProps) {
   const { id } = await params;
-  
+
   let professional;
   try {
-    professional = await getProfessionalById(id);
+    professional = await getProfessionalByIdOrSlug(id);
   } catch (error) {
     notFound();
   }

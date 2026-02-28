@@ -72,6 +72,39 @@ export async function getProfessionalById(id: string | number): Promise<Professi
 }
 
 /**
+ * Get a single professional by slug (SEO-friendly URL)
+ */
+export async function getProfessionalBySlug(slug: string): Promise<Professional> {
+  try {
+    const response = await fetch(`${API_URL}/api/professionals/slug/${slug}`, {
+      cache: 'no-store',
+      next: { revalidate: 0 },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch professional: ${response.status}`);
+    }
+
+    return mapProfessionalResponse(await response.json());
+  } catch (error) {
+    console.error('Error fetching professional by slug:', error);
+    throw error;
+  }
+}
+
+/**
+ * Resolve an id-or-slug string to a Professional.
+ * If the string is purely numeric → GET /api/professionals/{id}
+ * Otherwise               → GET /api/professionals/slug/{slug}
+ */
+export async function getProfessionalByIdOrSlug(idOrSlug: string): Promise<Professional> {
+  if (/^\d+$/.test(idOrSlug)) {
+    return getProfessionalById(idOrSlug);
+  }
+  return getProfessionalBySlug(idOrSlug);
+}
+
+/**
  * Get all skills
  */
 export async function getSkills(): Promise<Skill[]> {
@@ -156,6 +189,8 @@ function mapProfessionalResponse(raw: any): Professional {
       state: raw.state,
       country: raw.country,
       remote: raw.remote ?? false,
+      latitude: raw.latitude ?? undefined,
+      longitude: raw.longitude ?? undefined,
     },
     // Contact info — backend sends as flat fields
     email: raw.email ?? undefined,

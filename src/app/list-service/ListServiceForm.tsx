@@ -52,6 +52,8 @@ interface FormData {
   city: string;
   state: string;
   country: string;
+  latitude: string;
+  longitude: string;
   selectedCategory: string;
   skills: string[];
   services: ServiceFormData[];
@@ -82,6 +84,8 @@ const initialFormData: FormData = {
   city: "",
   state: "",
   country: "",
+  latitude: "",
+  longitude: "",
   selectedCategory: "",
   skills: [],
   services: [
@@ -232,6 +236,8 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
           city:             loc.city       ?? d.city    ?? '',
           state:            loc.state      ?? d.state   ?? '',
           country:          loc.country    ?? d.country ?? '',
+          latitude:         loc.latitude   != null ? String(loc.latitude)  : '',
+          longitude:        loc.longitude  != null ? String(loc.longitude) : '',
           serviceAreas:     d.serviceAreas ?? [],
           selectedCategory: d.category     ?? '',
           skills: ((d.skills ?? d.subcategories ?? []) as { name: string }[]).map((s) => s.name),
@@ -303,6 +309,9 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
+          // Capture raw coordinates immediately
+          update("latitude",  String(pos.coords.latitude));
+          update("longitude", String(pos.coords.longitude));
           const res  = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`
           );
@@ -342,10 +351,12 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
         headline:    formData.headline,
         bio:         formData.bio,
         location: {
-          city:    formData.city,
-          state:   formData.state,
-          country: formData.country,
-          remote:  false,
+          city:      formData.city,
+          state:     formData.state,
+          country:   formData.country,
+          remote:    false,
+          latitude:  formData.latitude  ? parseFloat(formData.latitude)  : null,
+          longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         },
         skills: formData.skills.map((name) => ({
           name,

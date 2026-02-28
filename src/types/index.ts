@@ -66,6 +66,7 @@ export interface Skill {
  */
 export interface Professional {
   id: string;
+  slug?: string; // SEO-friendly URL identifier, e.g. "john-doe-photographer"
   // Basic Info
   firstName: string;
   lastName: string;
@@ -81,6 +82,8 @@ export interface Professional {
     state?: string;
     country: string;
     remote: boolean; // Available for remote work
+    latitude?: number;
+    longitude?: number;
   };
 
   // Contact Info

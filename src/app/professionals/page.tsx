@@ -7,6 +7,7 @@
 import { Suspense } from "react";
 import { ModernSearchBar, ProfessionalCard } from "@/components/features";
 import { getProfessionals } from "@/lib/api";
+import { AvailabilityToggle } from "./AvailabilityToggle";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -27,7 +28,7 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
   const location = resolvedParams.location || "";
   const subcategories = resolvedParams.subcategories?.split(",").filter(Boolean) || [];
   const skills = resolvedParams.skills?.split(",").filter(Boolean) || [];
-  const available = resolvedParams.available === "true";
+  const available = resolvedParams.available !== "false"; // default true — exclude unavailable
 
   // Fetch professionals from API
   const professionals = await getProfessionals({
@@ -57,19 +58,24 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
       <div className="container mx-auto px-4 py-8">
         {/* Results Header */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
-            {professionals.length === 0 ? (
-              "No professionals found"
-            ) : (
-              <>
-                Showing <span className="font-semibold">{professionals.length}</span>{" "}
-                professional{professionals.length !== 1 ? "s" : ""}
-                {category && <> in <span className="font-semibold text-primary-600">{category}</span></>}
-                {location && <> near <span className="font-semibold text-primary-600">{location}</span></>}
-                {query && <> for &ldquo;<span className="font-semibold">{query}</span>&rdquo;</>}
-              </>
-            )}
-          </p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <p className="text-gray-600">
+              {professionals.length === 0 ? (
+                "No professionals found"
+              ) : (
+                <>
+                  Showing <span className="font-semibold">{professionals.length}</span>{" "}
+                  professional{professionals.length !== 1 ? "s" : ""}
+                  {category && <> in <span className="font-semibold text-primary-600">{category}</span></>}
+                  {location && <> near <span className="font-semibold text-primary-600">{location}</span></>}
+                  {query && <> for &ldquo;<span className="font-semibold">{query}</span>&rdquo;</>}
+                </>
+              )}
+            </p>
+            <Suspense fallback={null}>
+              <AvailabilityToggle available={available} />
+            </Suspense>
+          </div>
           <select
             className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
             defaultValue="relevance"
