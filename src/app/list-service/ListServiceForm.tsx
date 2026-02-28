@@ -412,7 +412,15 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
       }
     } catch (err) {
       console.error("Error saving professional profile:", err);
-      setErrors({ _submit: "Something went wrong. Please try again." });
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      // Surface field-level errors for duplicate email / phone
+      if (msg.toLowerCase().includes("email")) {
+        setErrors({ email: msg, _submit: msg });
+      } else if (msg.toLowerCase().includes("phone")) {
+        setErrors({ phone: msg, _submit: msg });
+      } else {
+        setErrors({ _submit: msg });
+      }
     } finally {
       setIsSubmitting(false);
     }

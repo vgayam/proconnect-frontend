@@ -233,9 +233,10 @@ export async function createProfessional(data: any): Promise<Professional> {
     });
     
     if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unknown error');
-      console.error('API Error:', response.status, errorText);
-      throw new Error(`Failed to create professional: ${response.status} ${response.statusText}`);
+      const body = await response.json().catch(() => ({}));
+      const message = body?.message || body?.error || `Error ${response.status}`;
+      console.error('API Error:', response.status, message);
+      throw new Error(message);
     }
     
     const raw = await response.json();
