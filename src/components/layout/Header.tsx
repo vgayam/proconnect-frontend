@@ -20,15 +20,13 @@ const NAV_LINKS: { href: string; label: string }[] = [];
  */
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  // Seed immediately from localStorage cache → no flash to "Sign In"
-  const [me, setMe] = useState<AuthProfessional | null | undefined>(() => {
-    // undefined during SSR; cache value on client
-    if (typeof window === 'undefined') return undefined;
-    return getCachedMe(); // null = logged out, AuthProfessional = logged in
-  });
+  // Start undefined (show nothing) until we know auth state — prevents flash
+  const [me, setMe] = useState<AuthProfessional | null | undefined>(undefined);
 
   useEffect(() => {
-    // Verify in the background and update if stale
+    // Immediately paint from cache, then verify in background
+    const cached = getCachedMe();
+    if (cached) setMe(cached);
     getMe().then(setMe).catch(() => setMe(null));
   }, []);
 
@@ -63,29 +61,34 @@ export function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             {me === undefined ? null : me ? (
-              <Link href="/dashboard" className="flex items-center gap-2 group">
-                <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold select-none group-hover:bg-primary-700 transition">
-                  {(me.displayName ?? '')
-                    .split(' ')
-                    .filter(Boolean)
-                    .slice(0, 2)
-                    .map((w) => w[0].toUpperCase())
-                    .join('') || '?'}
-                </span>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition">
-                  {(me.displayName ?? '').split(' ')[0]}
-                </span>
-              </Link>
+              <>
+                <Link href="/dashboard" className="flex items-center gap-2 group">
+                  <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold select-none group-hover:bg-primary-700 transition">
+                    {(me.displayName ?? '')
+                      .split(' ')
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map((w) => w[0].toUpperCase())
+                      .join('') || '?'}
+                  </span>
+                  <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition">
+                    {(me.displayName ?? '').split(' ')[0]}
+                  </span>
+                </Link>
+                <Link href="/dashboard">
+                  <Button size="sm" variant="outline">My Dashboard</Button>
+                </Link>
+              </>
             ) : (
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  Sign In
-                </Button>
-              </Link>
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link href="/list-service">
+                  <Button size="sm">List Your Services</Button>
+                </Link>
+              </>
             )}
-            <Link href="/list-service">
-              <Button size="sm">List Your Services</Button>
-            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -122,28 +125,33 @@ export function Header() {
             </Link>
           ))}
           <hr className="my-2" />
-          {me ? (
-            <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 py-2">
-              <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold select-none">
-                {(me.displayName ?? '')
-                  .split(' ')
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((w) => w[0].toUpperCase())
-                  .join('') || '?'}
-              </span>
-              <span className="text-sm font-medium text-gray-700">{me.displayName?.split(' ')[0] ?? 'Dashboard'}</span>
-            </Link>
+          {me === undefined ? null : me ? (
+            <>
+              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 py-2">
+                <span className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold select-none">
+                  {(me.displayName ?? '')
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w) => w[0].toUpperCase())
+                    .join('') || '?'}
+                </span>
+                <span className="text-sm font-medium text-gray-700">{me.displayName?.split(' ')[0] ?? 'Dashboard'}</span>
+              </Link>
+              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="outline" className="mt-2 w-full">My Dashboard</Button>
+              </Link>
+            </>
           ) : (
-            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="ghost" className="justify-start w-full">
-                Sign In
-              </Button>
-            </Link>
+            <>
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="justify-start w-full">Sign In</Button>
+              </Link>
+              <Link href="/list-service" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button className="mt-2 w-full">List Your Services</Button>
+              </Link>
+            </>
           )}
-          <Link href="/list-service">
-            <Button className="mt-2 w-full">List Your Services</Button>
-          </Link>
         </nav>
       </div>
     </header>
