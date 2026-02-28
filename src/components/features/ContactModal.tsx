@@ -1,248 +1,278 @@
 // =============================================================================
 // CONTACT MODAL COMPONENT
 // =============================================================================
-// Two-step contact flow:
-//   Step 1 — Collect visitor name + email/phone → create booking inquiry
-//   Step 2 — Show professional's contact details
+// Three-step email → OTP → contact-details flow
 // =============================================================================
 
 "use client";
 
 import { useState } from "react";
-import { Modal, Button, Input } from "@/components/ui";
-import { Professional } from "@/types";
-import { createInquiry } from "@/lib/api";
-import { Mail, Phone, MessageCircle, CheckCircle } from "lucide-react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { requestContactOtp, verifyContactOtp, ProfessionalContact } from "@/lib/api";
+import type { Professional } from "@/types";
 
-export interface ContactModalProps {
+// ─── types ───────────────────────────────────────────────────────────────────
+
+interface ContactModalProps {
   professional: Professional;
   isOpen: boolean;
   onClose: () => void;
 }
 
-type Step = "gate" | "details";
+type Step = "email" | "otp" | "done";
 
-/**
- * Contact modal — gates professional contact details behind name + email/phone
- * collection. Creates a booking inquiry so we can send a verified review link later.
- */
+// ─── component ───────────────────────────────────────────────────────────────
+
 export function ContactModal({ professional, isOpen, onClose }: ContactModalProps) {
-  const [step, setStep] = useState<Step>("gate");
-  const [name, setName] = useState("");
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [contact, setContact] = useState<ProfessionalContact | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const PHONE_RE = /^[+\d][\d\s\-().]{6,19}$/;
-
-  const professionalName =
-    professional.displayName ??
-    `${professional.firstName} ${professional.lastName}`;
-
-  function handleClose() {
-    // Reset state on close
-    setStep("gate");
-    setName("");
+  // Reset when modal closes
+  const handleClose = () => {
+    setStep("email");
     setEmail("");
-    setPhone("");
-    setError(null);
-    setFieldErrors({});
+    setOtp("");
+    setContact(null);
+    setError("");
     onClose();
-  }
+  };
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Step 1 — send OTP
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    // Per-field validation
-    const errs: typeof fieldErrors = {};
-
-    if (!name.trim()) {
-      errs.name = "Name is required.";
-    }
-
-    const hasEmail = email.trim().length > 0;
-    const hasPhone = phone.trim().length > 0;
-
-    if (!hasEmail && !hasPhone) {
-      errs.email = "Provide at least an email or phone number.";
-    } else {
-      if (hasEmail && !EMAIL_RE.test(email.trim())) {
-        errs.email = "Enter a valid email address (e.g. you@example.com).";
-      }
-      if (hasPhone && !PHONE_RE.test(phone.trim())) {
-        errs.phone = "Enter a valid phone number (digits, spaces, +, – allowed).";
-      }
-    }
-
-    if (Object.keys(errs).length > 0) {
-      setFieldErrors(errs);
-      return;
-    }
-    setFieldErrors({});
-
-    setIsSubmitting(true);
+    setError("");
+    setLoading(true);
     try {
-      await createInquiry(professional.id, {
-        name: name.trim(),
-        email: email.trim() || undefined,
-        phone: phone.trim() || undefined,
-      });
-      setStep("details");
+      await requestContactOtp(professional.id, email);
+      setStep("otp");
     } catch (err: any) {
-      setError(err?.message ?? "Something went wrong. Please try again.");
+      if (err?.status === 429) {
+        setError(err.message || "You have reached the contact view limit. Please try again in 24 hours.");
+      } else {
+        setError(err.message || "Failed to send verification code. Please try again.");
+      }
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
-  }
+  };
+
+  // Step 2 — verify OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const data = await verifyContactOtp(professional.id, email, otp);
+      setContact(data);
+      setStep("done");
+    } catch (err: any) {
+      if (err?.status === 429) {
+        setError(err.message || "You have reached the contact view limit. Please try again in 24 hours.");
+      } else {
+        setError(err.message || "Invalid or expired code. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError("");
+    setOtp("");
+    setLoading(true);
+    try {
+      await requestContactOtp(professional.id, email);
+      setError("");
+    } catch (err: any) {
+      setError(err.message || "Failed to resend code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── render ────────────────────────────────────────────────────────────────
+
+  const name =
+    professional.displayName ?? `${professional.firstName} ${professional.lastName}`.trim();
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={step === "gate" ? `Contact ${professionalName}` : "Contact Details"}
-      description={
-        step === "gate"
-          ? "Enter your details to unlock the professional's contact information."
-          : "Reach out directly using the details below."
-      }
-      size="md"
-    >
-      {step === "gate" ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Name <span className="text-red-500">*</span>
-            </label>
-            <Input
-              type="text"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => { setName(e.target.value); setFieldErrors((p) => ({ ...p, name: undefined })); }}
-              error={fieldErrors.name}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <Input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: undefined })); }}
-              error={fieldErrors.email}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone / WhatsApp
-            </label>
-            <Input
-              type="tel"
-              placeholder="+91 98765 43210"
-              value={phone}
-              onChange={(e) => { setPhone(e.target.value); setFieldErrors((p) => ({ ...p, phone: undefined })); }}
-              error={fieldErrors.phone}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <p className="text-xs text-gray-400">
-            At least one of email or phone is required.
-          </p>
-
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
+    <Modal isOpen={isOpen} onClose={handleClose} title={`Contact ${name}`}>
+      <div className="p-6 space-y-5">
+        {/* ── Step: email ── */}
+        {step === "email" && (
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Enter your email address to receive a verification code. We&apos;ll use it
+              to reveal {name}&apos;s contact details.
             </p>
-          )}
 
-          <div className="flex gap-3 justify-end pt-2">
-            <Button type="button" variant="ghost" onClick={handleClose} disabled={isSubmitting}>
-              Cancel
+            <div>
+              <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 mb-1">
+                Your email
+              </label>
+              <Input
+                id="contact-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+
+            {error && <ErrorBox message={error} />}
+
+            <Button type="submit" className="w-full" disabled={loading || !email}>
+              {loading ? "Sending…" : "Send verification code"}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Verifying…" : "Get Contact Details"}
+          </form>
+        )}
+
+        {/* ── Step: otp ── */}
+        {step === "otp" && (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <p className="text-sm text-gray-600">
+              We sent a 6-digit code to <strong>{email}</strong>.
+              Enter it below to see {name}&apos;s contact information.
+            </p>
+
+            <div>
+              <label htmlFor="contact-otp" className="block text-sm font-medium text-gray-700 mb-1">
+                Verification code
+              </label>
+              <Input
+                id="contact-otp"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                required
+                autoFocus
+              />
+            </div>
+
+            {error && <ErrorBox message={error} />}
+
+            <Button type="submit" className="w-full" disabled={loading || otp.length < 6}>
+              {loading ? "Verifying…" : "Verify & show contact"}
+            </Button>
+
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <button
+                type="button"
+                onClick={() => { setStep("email"); setOtp(""); setError(""); }}
+                className="hover:text-gray-700 underline"
+              >
+                Change email
+              </button>
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={loading}
+                className="hover:text-gray-700 underline disabled:opacity-50"
+              >
+                Resend code
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* ── Step: done ── */}
+        {step === "done" && contact && (
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Here are {name}&apos;s contact details. Please reach out respectfully.
+            </p>
+
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              {contact.email && (
+                <ContactRow
+                  icon="✉️"
+                  label="Email"
+                  value={contact.email}
+                  href={`mailto:${contact.email}`}
+                />
+              )}
+              {contact.phone && (
+                <ContactRow
+                  icon="📞"
+                  label="Phone"
+                  value={contact.phone}
+                  href={`tel:${contact.phone}`}
+                />
+              )}
+              {contact.whatsapp && (
+                <ContactRow
+                  icon="💬"
+                  label="WhatsApp"
+                  value={contact.whatsapp}
+                  href={`https://wa.me/${contact.whatsapp.replace(/\D/g, "")}`}
+                />
+              )}
+              {!contact.email && !contact.phone && !contact.whatsapp && (
+                <p className="text-sm text-gray-500 text-center py-2">
+                  No contact details available yet.
+                </p>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-400">
+              🔒 Contact details are only shown after email verification and are limited to
+              2 views per 24 hours.
+            </p>
+
+            <Button variant="outline" className="w-full" onClick={handleClose}>
+              Close
             </Button>
           </div>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          {/* Success banner */}
-          <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-3 text-sm">
-            <CheckCircle className="w-4 h-4 flex-shrink-0" />
-            <span>Inquiry recorded! You may receive a review link after your interaction.</span>
-          </div>
-
-          {/* Contact details */}
-          <div className="space-y-3">
-            {professional.email && (
-              <a
-                href={`mailto:${professional.email}`}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
-                  <Mail className="w-4 h-4 text-blue-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Email</p>
-                  <p className="text-sm font-semibold text-gray-800 truncate">{professional.email}</p>
-                </div>
-              </a>
-            )}
-            {professional.phone && (
-              <a
-                href={`tel:${professional.phone}`}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 group-hover:bg-green-100 transition-colors">
-                  <Phone className="w-4 h-4 text-green-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Phone</p>
-                  <p className="text-sm font-semibold text-gray-800">{professional.phone}</p>
-                </div>
-              </a>
-            )}
-            {professional.whatsapp && (
-              <a
-                href={`https://wa.me/${professional.whatsapp.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">WhatsApp</p>
-                  <p className="text-sm font-semibold text-gray-800">{professional.whatsapp}</p>
-                </div>
-              </a>
-            )}
-            {!(professional.email || professional.phone || professional.whatsapp) && (
-              <p className="text-sm text-gray-500 text-center py-4">
-                No contact details available.
-              </p>
-            )}
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <Button onClick={handleClose}>Done</Button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </Modal>
+  );
+}
+
+// ─── sub-components ──────────────────────────────────────────────────────────
+
+function ErrorBox({ message }: { message: string }) {
+  return (
+    <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+      {message}
+    </div>
+  );
+}
+
+function ContactRow({
+  icon, label, value, href,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  href: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-lg">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-gray-500">{label}</p>
+        <a
+          href={href}
+          target={href.startsWith("http") ? "_blank" : undefined}
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-blue-600 hover:underline truncate block"
+        >
+          {value}
+        </a>
+      </div>
+    </div>
   );
 }

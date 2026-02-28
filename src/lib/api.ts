@@ -326,3 +326,54 @@ export async function getCities(): Promise<string[]> {
     return [];
   }
 }
+
+// =============================================================================
+// CONTACT OTP APIs
+// =============================================================================
+
+export interface ProfessionalContact {
+  email: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+}
+
+/**
+ * Step 1 — send OTP to viewer's email
+ */
+export async function requestContactOtp(professionalId: string | number, email: string): Promise<void> {
+  const response = await fetch(`/api/contact/professionals/${professionalId}/request-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const message = data?.message || 'Failed to send verification code';
+    const err: any = new Error(message);
+    err.status = response.status;
+    throw err;
+  }
+}
+
+/**
+ * Step 2 — verify OTP and get contact details
+ */
+export async function verifyContactOtp(
+  professionalId: string | number,
+  email: string,
+  otp: string
+): Promise<ProfessionalContact> {
+  const response = await fetch(`/api/contact/professionals/${professionalId}/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const message = data?.message || 'Failed to verify code';
+    const err: any = new Error(message);
+    err.status = response.status;
+    throw err;
+  }
+  return response.json();
+}
