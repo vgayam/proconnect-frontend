@@ -7,29 +7,8 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, MapPin, ChevronDown, Loader2 } from "lucide-react";
-import { getCities, getSkillCategories } from "@/lib/api";
+import { getCities, getCategories, type Category } from "@/lib/api";
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  "Plumbing":          "🔧",
-  "Electrical":        "⚡",
-  "Photography":       "📷",
-  "Carpentry":         "🪚",
-  "Interior Design":   "🛋️",
-  "Painting":          "🎨",
-  "Cleaning":          "🧹",
-  "Fitness":           "💪",
-  "Education":         "📚",
-  "Technology":        "💻",
-  "HVAC":              "❄️",
-  "Landscaping":       "🌿",
-  "Pest Control":      "🐛",
-  "Graphic Design":    "✏️",
-  "Beauty & Wellness": "💆",
-  "Handyman":          "�",
-  "Vehicle":           "�",
-};
-
-// Priority order — most-searched categories shown first
 const CATEGORY_PRIORITY = [
   "Plumbing", "Electrical", "Carpentry", "Cleaning",
   "Photography", "Interior Design", "Painting", "Fitness",
@@ -63,7 +42,7 @@ function ModernSearchBarInner() {
     setQuery(searchParams.get("q") || "");
   }, [searchParams]);
   const [cities, setCities] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
@@ -89,7 +68,7 @@ function ModernSearchBarInner() {
   // Load cities and categories from backend
   useEffect(() => {
     getCities().then(setCities);
-    getSkillCategories().then(setCategories);
+    getCategories().then(setCategories);
   }, []);
 
   // Auto-detect location on mount ONLY if no cached/URL city
@@ -240,22 +219,27 @@ function ModernSearchBarInner() {
 
       {/* Quick category chips */}
       {categories.length > 0 && (() => {
-        const sorted = [
-          ...CATEGORY_PRIORITY.filter(c => categories.includes(c)),
-          ...categories.filter(c => !CATEGORY_PRIORITY.includes(c)).sort(),
+        const priorityNames = new Set(CATEGORY_PRIORITY);
+        const sorted: Category[] = [
+          ...CATEGORY_PRIORITY
+            .map(name => categories.find(c => c.name === name))
+            .filter((c): c is Category => !!c),
+          ...categories
+            .filter(c => !priorityNames.has(c.name))
+            .sort((a, b) => a.name.localeCompare(b.name)),
         ];
         const visible = showAllCategories ? sorted : sorted.slice(0, 10);
         const hidden = sorted.length - 10;
         return (
           <div className="flex flex-wrap gap-2 mt-4 justify-center">
-            {visible.map((label) => (
+            {visible.map((cat) => (
               <button
-                key={label}
-                onClick={() => handleCategoryClick(label)}
+                key={cat.id}
+                onClick={() => handleCategoryClick(cat.name)}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 font-medium shadow-sm hover:border-primary-400 hover:text-primary-600 hover:shadow-md transition-all duration-150"
               >
-                <span>{CATEGORY_EMOJIS[label] ?? "🔍"}</span>
-                {label}
+                <span>{cat.emoji ?? "🔍"}</span>
+                {cat.name}
               </button>
             ))}
             {!showAllCategories && hidden > 0 && (
