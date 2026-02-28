@@ -7,7 +7,6 @@
 import { Suspense } from "react";
 import { ModernSearchBar, ProfessionalCard } from "@/components/features";
 import { getProfessionals } from "@/lib/api";
-import { AvailabilityToggle } from "./AvailabilityToggle";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -16,27 +15,23 @@ interface SearchPageProps {
     location?: string;
     subcategories?: string;
     skills?: string;
-    available?: string;
   }>;
 }
 
 export default async function ProfessionalsPage({ searchParams }: SearchPageProps) {
   const resolvedParams = await searchParams;
-  // Parse search params
   const query = resolvedParams.q || "";
   const category = resolvedParams.category || "";
   const location = resolvedParams.location || "";
   const subcategories = resolvedParams.subcategories?.split(",").filter(Boolean) || [];
   const skills = resolvedParams.skills?.split(",").filter(Boolean) || [];
-  const available = resolvedParams.available !== "false"; // default true — exclude unavailable
 
-  // Fetch professionals from API
+  // Fetch professionals — backend defaults available=true, so unavailable are always excluded
   const professionals = await getProfessionals({
     query: query || undefined,
     category: category || undefined,
     location: location || undefined,
     skills: [...skills, ...subcategories].length > 0 ? [...skills, ...subcategories] : undefined,
-    available: available || undefined,
   });
 
   return (
@@ -72,9 +67,6 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
                 </>
               )}
             </p>
-            <Suspense fallback={null}>
-              <AvailabilityToggle available={available} />
-            </Suspense>
           </div>
           <select
             className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"

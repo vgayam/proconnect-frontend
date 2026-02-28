@@ -98,7 +98,7 @@ export function ProfessionalCard({ professional, className }: ProfessionalCardPr
               {isAvailable ? (
                 <div className="flex items-center gap-1 text-green-600">
                   <Clock className="h-4 w-4" />
-                  <span>Available</span>
+                  <span>Available for work</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1 text-gray-400">
