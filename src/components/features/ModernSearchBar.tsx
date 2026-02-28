@@ -57,6 +57,11 @@ function ModernSearchBarInner() {
     : "";
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [city, setCity] = useState(urlCity || cachedCity);
+
+  // Keep query input in sync with URL (e.g. when navigating via category chips)
+  useEffect(() => {
+    setQuery(searchParams.get("q") || "");
+  }, [searchParams]);
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -133,6 +138,11 @@ function ModernSearchBarInner() {
     if (category) params.set("category", category);
     if (loc.trim()) params.set("location", loc.trim());
     router.push(`/professionals?${params.toString()}`);
+  };
+
+  const handleCategoryClick = (label: string) => {
+    setQuery(""); // clear the search text
+    handleSearch("", label, city);
   };
 
   // Filter cities by what user typed
@@ -241,7 +251,7 @@ function ModernSearchBarInner() {
             {visible.map((label) => (
               <button
                 key={label}
-                onClick={() => handleSearch("", label)}
+                onClick={() => handleCategoryClick(label)}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 font-medium shadow-sm hover:border-primary-400 hover:text-primary-600 hover:shadow-md transition-all duration-150"
               >
                 <span>{CATEGORY_EMOJIS[label] ?? "🔍"}</span>
