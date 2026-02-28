@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+// Server-only env var (not NEXT_PUBLIC_ — those are build-time only)
+// Set API_URL in Vercel environment variables dashboard
+const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 const INVALID: object = { valid: false, professionalName: null, professionalId: null, message: "Could not reach the server. Please try again." };
 
