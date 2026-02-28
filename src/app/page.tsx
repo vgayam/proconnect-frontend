@@ -7,9 +7,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { ModernSearchBar } from "@/components/features";
+import { getCategories } from "@/lib/api";
 import { ArrowRight, Users, Shield, Zap, Search } from "lucide-react";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const categories = await getCategories();
+
   return (
     <div>
       {/* Hero Section */}
@@ -48,6 +51,39 @@ export default function HomePage() {
         <div className="absolute top-0 left-0 w-72 h-72 bg-primary-200 rounded-full blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary-200 rounded-full blur-3xl opacity-30 translate-x-1/2 translate-y-1/2" />
       </section>
+
+      {/* Categories Section */}
+      {categories.length > 0 && (
+        <section className="py-12 bg-white border-b border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Browse by Category
+              </h2>
+              <p className="text-gray-500 text-sm">Find the right professional for every need</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/professionals?category=${encodeURIComponent(cat.name)}`}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700 text-gray-700 text-sm font-medium shadow-sm transition-all duration-150 group"
+                >
+                  <span className="text-xl leading-none">{cat.emoji}</span>
+                  <span>{cat.name}</span>
+                </Link>
+              ))}
+              <Link
+                href="/professionals"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-dashed border-primary-300 bg-primary-50 text-primary-600 text-sm font-medium hover:bg-primary-100 transition-all duration-150"
+              >
+                View all
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section className="py-16 lg:py-24 bg-white">

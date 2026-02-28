@@ -363,6 +363,29 @@ export async function getCities(): Promise<string[]> {
 }
 
 // =============================================================================
+// CATEGORIES API
+// =============================================================================
+
+export interface Category {
+  id: number;
+  name: string;
+  emoji: string;
+  description: string;
+}
+
+export async function getCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/categories`, {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) return [];
+    return await response.json();
+  } catch {
+    return [];
+  }
+}
+
+// =============================================================================
 // CONTACT OTP APIs
 // =============================================================================
 
