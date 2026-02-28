@@ -7,7 +7,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { ModernSearchBar } from "@/components/features";
-import { ArrowRight, Users, Shield, Zap, Search } from "lucide-react";
+import { Users, Shield, Zap, Search } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -113,20 +113,12 @@ export default function HomePage() {
           <p className="text-lg text-primary-100 mb-8 max-w-2xl mx-auto">
             Join thousands of people who have found the perfect professional for their needs.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#search">
-              <Button size="xl" className="bg-white text-primary-600 hover:bg-primary-50 shadow-sm">
-                <Search className="h-5 w-5" />
-                Search Professionals
-              </Button>
-            </a>
-            <Link href="/professionals">
-              <Button size="xl" variant="outline" className="border-white text-white hover:bg-white/10">
-                Browse All
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
+          <Link href="/professionals">
+            <Button size="xl" className="bg-white text-primary-600 hover:bg-primary-50 shadow-sm">
+              <Search className="h-5 w-5" />
+              Find a Professional
+            </Button>
+          </Link>
         </div>
       </section>
 
