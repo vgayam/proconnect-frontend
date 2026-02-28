@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { validateReviewToken, submitReview, type TokenValidation } from "@/lib/api";
+import type { TokenValidation } from "@/lib/api";
 import { Star, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 export default function ReviewPage() {
@@ -22,7 +22,8 @@ export default function ReviewPage() {
   useEffect(() => {
     async function checkToken() {
       try {
-        const result = await validateReviewToken(token);
+        const res = await fetch(`/api/review/${token}`, { cache: "no-store" });
+        const result: TokenValidation = await res.json();
         setValidation(result);
       } catch {
         setValidation({ valid: false, professionalName: null, professionalId: null, message: "Failed to validate link." });
@@ -42,10 +43,18 @@ export default function ReviewPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await submitReview(token, { rating, comment: comment.trim() || undefined });
+      const res = await fetch(`/api/review/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, comment: comment.trim() || undefined }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to submit review.");
+      }
       setSubmitted(true);
-    } catch (err: any) {
-      setError(err?.message ?? "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
