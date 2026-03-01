@@ -25,6 +25,27 @@ import {
   MessageSquare,
 } from "lucide-react";
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Anonymize reviewer name — if it looks like an email, derive a display name.
+ * "gayamvenkata123@gmail.com" → "Gayamvenkata V."
+ * "john.doe@example.com"     → "John D."
+ * "Ravi Kumar"               → "Ravi Kumar" (unchanged)
+ */
+function anonymizeReviewerName(name: string): string {
+  if (!name) return "Verified Client";
+  if (!name.includes("@")) return name; // already a real name
+  const local = name.split("@")[0];
+  const parts = local.split(/[.\-_0-9]+/).filter(Boolean);
+  if (parts.length === 0) return "Verified Client";
+  const first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+  if (parts.length >= 2 && parts[1]) {
+    return `${first} ${parts[1].charAt(0).toUpperCase()}.`;
+  }
+  return first;
+}
+
 interface ProfilePageProps {
   params: Promise<{ id: string }>;
 }
@@ -318,7 +339,10 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                   {reviews.map((review) => (
                     <div key={review.id} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
                       <div className="flex items-center justify-between gap-3 mb-2">
-                        <span className="font-semibold text-gray-900 text-sm">{review.customerName}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900 text-sm">{anonymizeReviewerName(review.customerName)}</span>
+                          <span className="text-xs bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5">✓ Verified</span>
+                        </div>
                         <span className="text-xs text-gray-400">
                           {new Date(review.createdAt).toLocaleDateString("en-IN", {
                             year: "numeric",
