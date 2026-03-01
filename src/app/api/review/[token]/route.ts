@@ -4,14 +4,14 @@ import { NextRequest, NextResponse } from "next/server";
 // Set API_URL in Vercel environment variables dashboard
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-const INVALID: object = { valid: false, professionalName: null, professionalId: null, message: "Could not reach the server. Please try again." };
+const INVALID = (msg: string) => ({ valid: false, professionalName: null, professionalId: null, message: msg });
 
 async function safeJson(res: Response): Promise<object> {
   try {
     const text = await res.text();
-    return text ? JSON.parse(text) : INVALID;
+    return text ? JSON.parse(text) : INVALID("Empty response from backend.");
   } catch {
-    return INVALID;
+    return INVALID("Backend returned non-JSON response.");
   }
 }
 
@@ -21,12 +21,20 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
+  const targetUrl = `${API_URL}/api/reviews/token/${token}`;
   try {
-    const res = await fetch(`${API_URL}/api/reviews/token/${token}`, { cache: "no-store" });
+    const res = await fetch(targetUrl, { cache: "no-store" });
     const data = await safeJson(res);
-    return NextResponse.json(data, { status: res.ok ? 200 : res.status });
-  } catch {
-    return NextResponse.json(INVALID, { status: 200 });
+    return NextResponse.json(
+      { ...data, _debug_url: targetUrl, _debug_status: res.status },
+      { status: 200 }
+    );
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      INVALID(`Fetch failed: ${errMsg} | URL tried: ${targetUrl}`),
+      { status: 200 }
+    );
   }
 }
 
@@ -45,7 +53,8 @@ export async function POST(
     });
     const data = await safeJson(res);
     return NextResponse.json(data, { status: res.status });
-  } catch {
-    return NextResponse.json({ message: "Could not reach the server. Please try again." }, { status: 503 });
+  } catch (err: unknown) {
+    const errMsg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ message: `Could not reach the server: ${errMsg}` }, { status: 503 });
   }
 }
