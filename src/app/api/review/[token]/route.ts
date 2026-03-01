@@ -25,10 +25,7 @@ export async function GET(
   try {
     const res = await fetch(targetUrl, { cache: "no-store" });
     const data = await safeJson(res);
-    return NextResponse.json(
-      { ...data, _debug_url: targetUrl, _debug_status: res.status },
-      { status: 200 }
-    );
+    return NextResponse.json(data, { status: 200 });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
