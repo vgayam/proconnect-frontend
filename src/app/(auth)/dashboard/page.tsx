@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
-import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check } from 'lucide-react';
 
 interface DashboardStats {
   contactRevealsThisWeek: number;
@@ -21,7 +21,6 @@ export default function DashboardPage() {
   const [toggling, setToggling] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [copied, setCopied] = useState(false);
-  const [showLeads, setShowLeads] = useState(false);
 
   useEffect(() => {
     getMe().then((profile) => {
@@ -195,35 +194,6 @@ export default function DashboardPage() {
                 </div>
                 <span className="text-sm font-bold text-gray-900">{stats.totalLeads}</span>
               </div>
-
-              {/* Lead emails list */}
-              {stats.leadEmails.length > 0 && (
-                <div className="pt-1 border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => setShowLeads((v) => !v)}
-                    className="flex items-center justify-between w-full text-xs font-medium text-primary-600 hover:text-primary-700 py-1"
-                  >
-                    <span>View lead emails ({stats.leadEmails.length})</span>
-                    {showLeads ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                  </button>
-                  {showLeads && (
-                    <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-                      {stats.leadEmails.map((email) => (
-                        <div key={email} className="flex items-center justify-between gap-2 px-2 py-1.5 bg-gray-50 rounded-lg">
-                          <span className="text-xs text-gray-700 truncate">{email}</span>
-                          <a
-                            href={`mailto:${email}`}
-                            className="text-xs text-primary-600 hover:underline shrink-0"
-                          >
-                            Email
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
               {stats.totalLeads === 0 && (
                 <p className="text-xs text-gray-400 pt-1">
