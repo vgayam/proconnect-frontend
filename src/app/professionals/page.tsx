@@ -7,6 +7,7 @@
 import { Suspense } from "react";
 import { ModernSearchBar, ProfessionalCard } from "@/components/features";
 import { getProfessionals } from "@/lib/api";
+import SortSelect from "./SortSelect";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -15,6 +16,7 @@ interface SearchPageProps {
     location?: string;
     subcategories?: string;
     skills?: string;
+    sort?: string;
   }>;
 }
 
@@ -25,13 +27,30 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
   const location = resolvedParams.location || "";
   const subcategories = resolvedParams.subcategories?.split(",").filter(Boolean) || [];
   const skills = resolvedParams.skills?.split(",").filter(Boolean) || [];
+  const sort = resolvedParams.sort || "relevance";
 
   // Fetch professionals — backend defaults available=true, so unavailable are always excluded
-  const professionals = await getProfessionals({
+  let professionals = await getProfessionals({
     query: query || undefined,
     category: category || undefined,
     location: location || undefined,
     skills: [...skills, ...subcategories].length > 0 ? [...skills, ...subcategories] : undefined,
+  });
+
+  // Apply sort
+  professionals = [...professionals].sort((a, b) => {
+    switch (sort) {
+      case "rating":
+        return (b.rating ?? 0) - (a.rating ?? 0);
+      case "reviews":
+        return (b.reviewCount ?? 0) - (a.reviewCount ?? 0);
+      case "price_low":
+        return (a.hourlyRate?.min ?? 0) - (b.hourlyRate?.min ?? 0);
+      case "price_high":
+        return (b.hourlyRate?.min ?? 0) - (a.hourlyRate?.min ?? 0);
+      default:
+        return 0; // keep server order for "relevance"
+    }
   });
 
   return (
@@ -68,16 +87,9 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
               )}
             </p>
           </div>
-          <select
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-            defaultValue="relevance"
-          >
-            <option value="relevance">Most Relevant</option>
-            <option value="rating">Highest Rated</option>
-            <option value="reviews">Most Reviews</option>
-            <option value="price_low">Price: Low to High</option>
-            <option value="price_high">Price: High to Low</option>
-          </select>
+          <Suspense fallback={<div className="w-40 h-9 bg-gray-100 rounded-lg animate-pulse" />}>
+            <SortSelect />
+          </Suspense>
         </div>
 
         {/* Results Grid */}
