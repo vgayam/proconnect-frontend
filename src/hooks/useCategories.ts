@@ -16,7 +16,7 @@ interface ServiceCategoriesState {
 // In-memory cache to avoid multiple API calls
 let cachedData: ServiceCategoriesState | null = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour — backend serves from in-process cache anyway
 
 /**
  * Hook to fetch and manage categories and subcategories data

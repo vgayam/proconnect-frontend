@@ -110,7 +110,7 @@ export async function getProfessionalByIdOrSlug(idOrSlug: string): Promise<Profe
 export async function getSkills(): Promise<Skill[]> {
   try {
     const response = await fetch(`${API_URL}/api/skills`, {
-      cache: 'force-cache', // Skills don't change often
+      next: { revalidate: 3600 }, // 1 hour — skills rarely change
     });
     
     if (!response.ok) {
@@ -130,7 +130,7 @@ export async function getSkills(): Promise<Skill[]> {
 export async function getSkillCategories(): Promise<string[]> {
   try {
     const response = await fetch(`${API_URL}/api/skills/categories`, {
-      cache: 'force-cache',
+      next: { revalidate: 3600 }, // 1 hour — categories rarely change
     });
     
     if (!response.ok) {
