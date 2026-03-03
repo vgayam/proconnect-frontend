@@ -43,7 +43,6 @@ export async function getProfessionals(params?: SearchParams): Promise<Professio
     return list.map(mapProfessionalResponse);
   } catch (error) {
     console.error('Error fetching professionals:', error);
-    // Return empty array instead of throwing to prevent page crash
     return [];
   }
 }

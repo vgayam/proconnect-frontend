@@ -31,16 +31,23 @@ function ModernSearchBarInner() {
 
   // Seed city: URL param → localStorage cache → empty (geolocation will fill later)
   const urlCity = searchParams.get("location") || "";
-  const cachedCity = typeof window !== "undefined"
-    ? (localStorage.getItem(CITY_CACHE_KEY) || "")
-    : "";
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [city, setCity] = useState(urlCity || cachedCity);
+  // Never access localStorage in component body — it causes SSR/hydration mismatch on mobile.
+  // Seed from URL first; localStorage is read safely in useEffect after mount.
+  const [city, setCity] = useState(urlCity);
 
   // Keep query input in sync with URL (e.g. when navigating via category chips)
   useEffect(() => {
     setQuery(searchParams.get("q") || "");
   }, [searchParams]);
+
+  // Safely read localStorage after mount (only runs on client, never on server)
+  useEffect(() => {
+    if (!urlCity) {
+      const cachedCity = localStorage.getItem(CITY_CACHE_KEY) || "";
+      if (cachedCity) setCity(cachedCity);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [cities, setCities] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
