@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
-import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check } from 'lucide-react';
+import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2 } from 'lucide-react';
 
 interface DashboardStats {
   contactRevealsThisWeek: number;
@@ -63,6 +63,16 @@ export default function DashboardPage() {
   function handleCopyLink() {
     if (!me) return;
     const url = `${window.location.origin}/professionals/${me.id}`;
+    // Use native Web Share API on mobile (WhatsApp, SMS, etc.)
+    if (navigator.share) {
+      navigator.share({
+        title: `${me.displayName} on ProConnect`,
+        text: `Check out ${me.displayName}'s professional profile on ProConnect`,
+        url,
+      }).catch(() => {}); // user cancelled — ignore
+      return;
+    }
+    // Fallback: copy to clipboard on desktop
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -152,14 +162,19 @@ export default function DashboardPage() {
               </Link>
             )}
 
-            {/* Share profile link */}
+            {/* Share / Copy profile link */}
             <button
               type="button"
               onClick={handleCopyLink}
               className="flex items-center justify-center gap-2 w-full px-5 py-2.5 border border-dashed border-gray-300 hover:bg-gray-50 text-gray-600 text-sm font-medium rounded-xl transition"
             >
-              {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-              {copied ? 'Link copied!' : 'Copy profile link'}
+              {copied
+                ? <Check className="h-4 w-4 text-green-600" />
+                : 'share' in navigator
+                  ? <Share2 className="h-4 w-4" />
+                  : <Copy className="h-4 w-4" />
+              }
+              {copied ? 'Link copied!' : 'Share profile'}
             </button>
           </div>
 

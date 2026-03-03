@@ -12,6 +12,7 @@ import { formatLocation, formatPriceRange } from "@/lib/utils";
 import { Avatar, Badge, Card, CardContent } from "@/components/ui";
 import { SocialLinks } from "@/components/features";
 import { ContactButton } from "./ContactButton";
+import { ShareButton } from "./ShareButton";
 import {
   MapPin,
   Star,
@@ -226,6 +227,7 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                   {/* CTA */}
                   <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
                     <ContactButton professional={professional} />
+                    <ShareButton name={displayName ?? `${firstName} ${lastName}`} headline={headline} />
                     {hourlyRate && (
                       <div className="text-center text-sm text-gray-500">
                         From{" "}
