@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Share2, Copy, Check } from "lucide-react";
 
 interface ShareButtonProps {
   name: string;
   headline?: string;
+  url: string; // canonical URL passed from server — never rely on window.location
 }
 
-export function ShareButton({ name, headline }: ShareButtonProps) {
+export function ShareButton({ name, headline, url }: ShareButtonProps) {
   const [copied, setCopied] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+
+  // Detect Web Share API support after mount (navigator is undefined on server)
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && "share" in navigator);
+  }, []);
 
   async function handleShare() {
-    const url = window.location.href;
     const shareData = {
       title: `${name} on ProConnect`,
       text: headline
@@ -22,7 +28,7 @@ export function ShareButton({ name, headline }: ShareButtonProps) {
     };
 
     // Native Web Share API — opens WhatsApp, SMS, email, etc. on mobile
-    if (navigator.share) {
+    if (canShare) {
       try {
         await navigator.share(shareData);
       } catch {
@@ -45,8 +51,8 @@ export function ShareButton({ name, headline }: ShareButtonProps) {
     <button
       type="button"
       onClick={handleShare}
-      title="Share profile"
-      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium transition-colors"
+      title={canShare ? "Share profile" : "Copy profile link"}
+      className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary-600 transition-colors"
     >
       {copied ? (
         <>
@@ -55,12 +61,8 @@ export function ShareButton({ name, headline }: ShareButtonProps) {
         </>
       ) : (
         <>
-          {'share' in navigator ? (
-            <Share2 className="h-4 w-4" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          Share
+          {canShare ? <Share2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {canShare ? "Share" : "Copy link"}
         </>
       )}
     </button>

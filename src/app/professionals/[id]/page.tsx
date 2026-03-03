@@ -127,7 +127,12 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
     rating,
     reviewCount,
     hourlyRate,
+    slug,
   } = professional;
+
+  // Build canonical URL for sharing — prefer slug, fall back to numeric id
+  const profilePath = `/professionals/${slug ?? professional.id}`;
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://proconnect.app"}${profilePath}`;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -177,6 +182,12 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                           <CheckCircle className="h-6 w-6 text-primary-500 shrink-0" />
                         </span>
                       )}
+                      {/* Share button inline with name — visible immediately */}
+                      <ShareButton
+                        name={displayName ?? `${firstName} ${lastName}`}
+                        headline={headline}
+                        url={canonicalUrl}
+                      />
                     </div>
                     <p className="text-lg text-gray-500 mb-4">{headline}</p>
 
@@ -227,7 +238,6 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                   {/* CTA */}
                   <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
                     <ContactButton professional={professional} />
-                    <ShareButton name={displayName ?? `${firstName} ${lastName}`} headline={headline} />
                     {hourlyRate && (
                       <div className="text-center text-sm text-gray-500">
                         From{" "}
