@@ -2,18 +2,45 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
+/** Step 1 – send OTP to booker's email */
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const professionalId = searchParams.get('professionalId');
+  const email = searchParams.get('email');
+
+  if (!professionalId || !email) {
+    return NextResponse.json({ message: 'professionalId and email are required' }, { status: 400 });
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/api/inquiries/professionals/${professionalId}/request-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+  } catch (err) {
+    console.error('[booking/request-otp] fetch failed:', err);
+    return NextResponse.json({ message: 'Could not reach booking service.' }, { status: 502 });
+  }
+
+  const data = await res.json().catch(() => ({}));
+  return NextResponse.json(data, { status: res.status });
+}
+
+/** Step 2 – verify OTP + create booking */
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { professionalId, customerName, customerEmail, customerPhone, preferredDate, preferredTime, note } = body;
+  const { professionalId, customerName, customerEmail, customerPhone,
+          preferredDate, preferredTime, note, otp } = body;
 
-  if (!professionalId || !customerName || !customerEmail || !preferredDate || !preferredTime) {
+  if (!professionalId || !customerName || !customerEmail || !preferredDate || !preferredTime || !otp) {
     return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
   }
 
-  // POST to backend inquiry endpoint (reuses existing BookingInquiry entity)
   let res: Response;
   try {
-    res = await fetch(`${API_URL}/api/inquiries/professionals/${professionalId}`, {
+    res = await fetch(`${API_URL}/api/inquiries/professionals/${professionalId}/verify-and-book`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -23,6 +50,7 @@ export async function POST(req: NextRequest) {
         preferredDate,
         preferredTime,
         note: note ?? null,
+        otp,
       }),
     });
   } catch (fetchErr) {
