@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, MapPin, ChevronDown, Loader2, Navigation } from "lucide-react";
+import { Search, MapPin, ChevronDown, Loader2 } from "lucide-react";
 import { getCities, getCategories, type Category } from "@/lib/api";
 
 const CATEGORY_PRIORITY = [
@@ -54,8 +54,6 @@ function ModernSearchBarInner() {
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
-  const [nearMeActive, setNearMeActive] = useState(false);
-  const [nearMeCoords, setNearMeCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   // Rotating placeholder
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
@@ -120,48 +118,34 @@ function ModernSearchBarInner() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // On Search: try to get GPS coords, fall back to typed city if denied/unavailable
   const handleSearch = (q = query, category = "", loc = city) => {
     const params = new URLSearchParams();
     if (q.trim()) params.set("q", q.trim());
     if (category) params.set("category", category);
-    if (nearMeActive && nearMeCoords) {
-      params.set("lat", String(nearMeCoords.lat));
-      params.set("lng", String(nearMeCoords.lng));
-      params.set("radius", "3");
-    } else if (loc.trim()) {
-      params.set("location", loc.trim());
-    }
-    router.push(`/professionals?${params.toString()}`);
-  };
 
-  const handleNearMe = () => {
-    if (!navigator.geolocation) return;
-    setDetectingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        setNearMeCoords({ lat: coords.latitude, lng: coords.longitude });
-        setNearMeActive(true);
-        // Also reverse-geocode to show a human city name
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`
-          );
-          const data = await res.json();
-          const detectedCity =
-            data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
-          if (detectedCity) saveCity(detectedCity);
-        } catch { /* silent */ }
-        setDetectingLocation(false);
-        // Immediately trigger a search
-        const params = new URLSearchParams();
-        if (query.trim()) params.set("q", query.trim());
-        params.set("lat", String(coords.latitude));
-        params.set("lng", String(coords.longitude));
-        router.push(`/professionals?${params.toString()}`);
-      },
-      () => setDetectingLocation(false),
-      { timeout: 8000 }
-    );
+    if (navigator.geolocation) {
+      setDetectingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          setDetectingLocation(false);
+          params.set("lat", String(coords.latitude));
+          params.set("lng", String(coords.longitude));
+          params.set("radius", "3");
+          router.push(`/professionals?${params.toString()}`);
+        },
+        () => {
+          // Permission denied or error — fall back to city text
+          setDetectingLocation(false);
+          if (loc.trim()) params.set("location", loc.trim());
+          router.push(`/professionals?${params.toString()}`);
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      if (loc.trim()) params.set("location", loc.trim());
+      router.push(`/professionals?${params.toString()}`);
+    }
   };
 
   const handleCategoryClick = (label: string) => {
@@ -259,25 +243,6 @@ function ModernSearchBarInner() {
         >
           <Search className="h-4 w-4" />
           Search
-        </button>
-
-        {/* Near me button */}
-        <button
-          type="button"
-          onClick={handleNearMe}
-          disabled={detectingLocation}
-          title="Find professionals near my location"
-          className={`flex items-center justify-center gap-2 px-4 py-3 border text-sm font-semibold rounded-xl transition-colors flex-shrink-0 sm:self-stretch ${
-            nearMeActive
-              ? "bg-primary-50 border-primary-400 text-primary-700"
-              : "border-gray-200 text-gray-600 hover:border-primary-400 hover:text-primary-600"
-          } disabled:opacity-50`}
-        >
-          {detectingLocation
-            ? <Loader2 className="h-4 w-4 animate-spin" />
-            : <Navigation className={`h-4 w-4 ${nearMeActive ? "fill-primary-200" : ""}`} />
-          }
-          <span className="hidden sm:inline">{nearMeActive ? "Near me ✓" : "Near me"}</span>
         </button>
       </div>
 
