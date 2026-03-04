@@ -13,6 +13,7 @@ import { Avatar, Badge, Card, CardContent } from "@/components/ui";
 import { SocialLinks } from "@/components/features";
 import { ContactButton } from "./ContactButton";
 import { ShareButton } from "./ShareButton";
+import { BookingButton } from "./BookingButton";
 import {
   MapPin,
   Star,
@@ -238,6 +239,10 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                   {/* CTA */}
                   <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
                     <ContactButton professional={professional} />
+                    <BookingButton
+                      professionalId={professional.id}
+                      professionalName={displayName ?? `${firstName} ${lastName}`}
+                    />
                     {hourlyRate && (
                       <div className="text-center text-sm text-gray-500">
                         From{" "}

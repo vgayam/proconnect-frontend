@@ -4,7 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
-import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2 } from 'lucide-react';
+import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock } from 'lucide-react';
+
+interface Booking {
+  id: number;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  note?: string;
+  createdAt: string;
+}
 
 interface DashboardStats {
   contactRevealsThisWeek: number;
@@ -20,6 +31,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -37,6 +49,10 @@ export default function DashboardPage() {
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d) setStats(d); })
       .catch(() => {});
+    fetch('/api/professionals/me/bookings')
+      .then((r) => r.ok ? r.json() : [])
+      .then((d) => setBookings(Array.isArray(d) ? d : []))
+      .catch(() => setBookings([]));
   }, [me]);
 
   async function handleToggle() {
@@ -222,6 +238,42 @@ export default function DashboardPage() {
                 <div key={i} className="flex items-center justify-between">
                   <div className="h-4 w-40 bg-gray-100 rounded animate-pulse" />
                   <div className="h-4 w-6 bg-gray-100 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Bookings Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-5">
+          <h2 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-primary-500" /> Booking Requests
+          </h2>
+          {bookings === null ? (
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : bookings.length === 0 ? (
+            <p className="text-xs text-gray-400 py-3 text-center">
+              No booking requests yet. Share your profile to get started!
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+              {bookings.slice().reverse().map((b) => (
+                <div key={b.id} className="p-3 rounded-xl border border-gray-100 bg-gray-50 text-sm">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="font-semibold text-gray-900 truncate">{b.customerName}</span>
+                    {b.preferredDate && b.preferredTime && (
+                      <span className="flex items-center gap-1 text-xs text-primary-600 font-medium bg-primary-50 px-2 py-0.5 rounded-full shrink-0">
+                        <Clock className="h-3 w-3" />
+                        {b.preferredDate} {b.preferredTime}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 truncate">{b.customerEmail}{b.customerPhone ? ` · ${b.customerPhone}` : ''}</p>
+                  {b.note && <p className="text-xs text-gray-400 mt-1 italic truncate">&ldquo;{b.note}&rdquo;</p>}
                 </div>
               ))}
             </div>

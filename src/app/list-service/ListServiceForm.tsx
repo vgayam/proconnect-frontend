@@ -31,6 +31,8 @@ import {
   Phone,
   Mail,
   MessageCircle,
+  ShieldCheck,
+  Upload,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -68,6 +70,7 @@ interface FormData {
   instagram: string;
   website: string;
   serviceAreas: string[];
+  idDocument: File | null;
 }
 
 interface FieldError {
@@ -102,6 +105,7 @@ const initialFormData: FormData = {
   instagram: "",
   website: "",
   serviceAreas: [],
+  idDocument: null,
 };
 
 const STEPS = [
@@ -111,6 +115,7 @@ const STEPS = [
   { id: 4, title: "Pricing",          short: "Pricing",  icon: DollarSign },
   { id: 5, title: "Contact Info",     short: "Contact",  icon: Phone },
   { id: 6, title: "Online Links",     short: "Links",    icon: LinkIcon },
+  { id: 7, title: "Verification",     short: "Verify",   icon: ShieldCheck },
 ];
 
 // ─── Validation ───────────────────────────────────────────────────────────────
@@ -265,6 +270,7 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
           twitter:       getLink('twitter'),
           instagram:     getLink('instagram'),
           website:       getLink('website'),
+          idDocument:    null, // never pre-fill file uploads
         });
       })
       .catch(() => {/* silent */});
@@ -556,6 +562,9 @@ export function ListServiceForm({ isEdit = false }: { isEdit?: boolean }) {
         )}
         {currentStep === 6 && (
           <Step6 formData={formData} update={update} />
+        )}
+        {currentStep === 7 && (
+          <Step7 formData={formData} update={update} errors={errors} />
         )}
 
         {/* Submit-level error */}
@@ -1174,6 +1183,105 @@ function Step6({
 
       <p className="text-xs text-gray-400 pt-2">
         💡 Tip: A complete profile with links gets up to <strong>3× more inquiries</strong>.
+      </p>
+    </div>
+  );
+}
+
+// ─── Step 7: ID Verification ───────────────────────────────────────────────────
+
+function Step7({
+  formData, update, errors,
+}: {
+  formData: FormData;
+  update: <K extends keyof FormData>(f: K, v: FormData[K]) => void;
+  errors: FieldError;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  function handleFile(file: File | null) {
+    update("idDocument", file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="mb-2">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5 text-primary-500" /> Identity Verification
+        </h2>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Upload a government-issued ID to get a <strong>Verified</strong> badge on your profile.
+          This step is optional but strongly recommended — verified profiles get significantly more inquiries.
+        </p>
+      </div>
+
+      {/* Accepted docs */}
+      <div className="grid grid-cols-3 gap-2 text-center text-xs text-gray-500">
+        {["Aadhaar Card", "PAN Card", "Passport / DL"].map((doc) => (
+          <div key={doc} className="p-2.5 rounded-lg border border-gray-200 bg-gray-50 font-medium">
+            {doc}
+          </div>
+        ))}
+      </div>
+
+      {/* Upload area */}
+      <div
+        onClick={() => fileRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const file = e.dataTransfer.files[0];
+          if (file) handleFile(file);
+        }}
+        className="cursor-pointer border-2 border-dashed border-gray-300 hover:border-primary-400 rounded-xl p-6 flex flex-col items-center gap-3 transition bg-gray-50 hover:bg-primary-50"
+      >
+        {preview ? (
+          <img src={preview} alt="ID preview" className="max-h-40 rounded-lg object-contain border border-gray-200" />
+        ) : (
+          <>
+            <Upload className="h-8 w-8 text-gray-400" />
+            <p className="text-sm font-medium text-gray-700">Click or drag & drop your ID here</p>
+            <p className="text-xs text-gray-400">JPG, PNG or PDF · max 5 MB</p>
+          </>
+        )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/jpeg,image/png,application/pdf"
+          className="hidden"
+          onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+        />
+      </div>
+
+      {formData.idDocument && (
+        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-xl text-sm">
+          <span className="text-green-700 font-medium">✓ {formData.idDocument.name}</span>
+          <button type="button" onClick={() => handleFile(null)} className="text-xs text-red-500 hover:underline">
+            Remove
+          </button>
+        </div>
+      )}
+
+      {errors.idDocument && (
+        <p className="flex items-center gap-1 text-xs text-red-600">
+          <AlertCircle className="h-3 w-3" /> {errors.idDocument}
+        </p>
+      )}
+
+      <p className="text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+        🔒 Your ID is stored securely and only used for identity verification. It is never shared with clients.
+      </p>
+
+      <p className="text-xs text-gray-400 text-center">
+        You can skip this step and verify later from your dashboard.
       </p>
     </div>
   );
