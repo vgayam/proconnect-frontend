@@ -54,6 +54,8 @@ function ModernSearchBarInner() {
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [showAllCategories, setShowAllCategories] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
+  // Store coords captured during auto-detect — reused on search, no second GPS prompt
+  const coordsRef = useRef<{ lat: number; lng: number } | null>(null);
 
   // Rotating placeholder
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
@@ -84,6 +86,8 @@ function ModernSearchBarInner() {
     setDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
+        // Store for reuse on search — no second prompt needed
+        coordsRef.current = { lat: coords.latitude, lng: coords.longitude };
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`
@@ -118,34 +122,20 @@ function ModernSearchBarInner() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // On Search: try to get GPS coords, fall back to typed city if denied/unavailable
+  // On Search: use already-captured coords if available, otherwise fall back to typed city
   const handleSearch = (q = query, category = "", loc = city) => {
     const params = new URLSearchParams();
     if (q.trim()) params.set("q", q.trim());
     if (category) params.set("category", category);
 
-    if (navigator.geolocation) {
-      setDetectingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        ({ coords }) => {
-          setDetectingLocation(false);
-          params.set("lat", String(coords.latitude));
-          params.set("lng", String(coords.longitude));
-          params.set("radius", "3");
-          router.push(`/professionals?${params.toString()}`);
-        },
-        () => {
-          // Permission denied or error — fall back to city text
-          setDetectingLocation(false);
-          if (loc.trim()) params.set("location", loc.trim());
-          router.push(`/professionals?${params.toString()}`);
-        },
-        { timeout: 5000 }
-      );
-    } else {
-      if (loc.trim()) params.set("location", loc.trim());
-      router.push(`/professionals?${params.toString()}`);
+    if (coordsRef.current) {
+      params.set("lat", String(coordsRef.current.lat));
+      params.set("lng", String(coordsRef.current.lng));
+      params.set("radius", "3");
+    } else if (loc.trim()) {
+      params.set("location", loc.trim());
     }
+    router.push(`/professionals?${params.toString()}`);
   };
 
   const handleCategoryClick = (label: string) => {
@@ -182,7 +172,7 @@ function ModernSearchBarInner() {
               <input
                 type="text"
                 value={city}
-                onChange={(e) => { saveCity(e.target.value); setShowCityDropdown(true); }}
+                onChange={(e) => { saveCity(e.target.value); coordsRef.current = null; setShowCityDropdown(true); }}
                 onFocus={() => setShowCityDropdown(true)}
                 placeholder="Any city"
                 className="text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent w-full"
