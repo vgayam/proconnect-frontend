@@ -8,8 +8,8 @@
 //   4. done   → success
 // =============================================================================
 
-import { useState } from "react";
-import { X, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, Loader2, AlertCircle, ShieldCheck, LocateFixed } from "lucide-react";
 
 interface BookingModalProps {
   professionalId: string | number;
@@ -48,6 +48,70 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
   const [sending, setSending]     = useState(false); // sending OTP
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
+  const geocodedRef = useRef(false); // only auto-fill once per open
+
+  // When the customer reaches the form step, auto-fill their address from GPS
+  useEffect(() => {
+    if (step !== "form" || geocodedRef.current || !navigator.geolocation) return;
+    geocodedRef.current = true;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const a = data.address || {};
+            const parts = [
+              a.house_number && a.road ? `${a.house_number} ${a.road}` : a.road,
+              a.neighbourhood || a.suburb || a.village,
+              a.city || a.town || a.county,
+              a.state,
+            ].filter(Boolean);
+            if (parts.length > 0) setAddress(parts.join(", "));
+          }
+        } catch { /* silently ignore */ } finally {
+          setGeoLoading(false);
+        }
+      },
+      () => setGeoLoading(false), // denied / unavailable
+      { timeout: 8_000, maximumAge: 120_000 }
+    );
+  }, [step]);
+
+  function refetchGeo() {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            const a = data.address || {};
+            const parts = [
+              a.house_number && a.road ? `${a.house_number} ${a.road}` : a.road,
+              a.neighbourhood || a.suburb || a.village,
+              a.city || a.town || a.county,
+              a.state,
+            ].filter(Boolean);
+            if (parts.length > 0) setAddress(parts.join(", "));
+          }
+        } catch { /* ignore */ } finally {
+          setGeoLoading(false);
+        }
+      },
+      () => setGeoLoading(false),
+      { timeout: 8_000, maximumAge: 0 }
+    );
+  }
 
   if (!isOpen) return null;
 
@@ -56,6 +120,8 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
     setSelectedDate(""); setSelectedTime("");
     setName(""); setEmail(""); setPhone(""); setAddress(""); setNote(""); setOtp("");
     setError("");
+    setGeoLoading(false);
+    geocodedRef.current = false;
     onClose();
   }
 
@@ -266,12 +332,27 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <MapPin className="inline h-3.5 w-3.5 mr-1" />Your address <span className="text-red-500">*</span>
-                </label>
-                <input type="text" required value={address} onChange={e => setAddress(e.target.value)}
-                  placeholder="123 Main St, Hyderabad, Telangana"
-                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400" />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    <MapPin className="inline h-3.5 w-3.5 mr-1" />Your address <span className="text-red-500">*</span>
+                  </label>
+                  <button type="button" onClick={refetchGeo} disabled={geoLoading}
+                    className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 disabled:opacity-50 transition">
+                    {geoLoading
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <LocateFixed className="h-3 w-3" />}
+                    {geoLoading ? "Detecting…" : "Use my location"}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input type="text" required value={address} onChange={e => setAddress(e.target.value)}
+                    placeholder={geoLoading ? "Detecting your location…" : "123 Main St, Hyderabad, Telangana"}
+                    disabled={geoLoading}
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 disabled:bg-gray-50 disabled:text-gray-400" />
+                  {geoLoading && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary-400 animate-spin" />
+                  )}
+                </div>
                 <p className="text-xs text-gray-400 mt-1">So the professional knows where to come</p>
               </div>
 
