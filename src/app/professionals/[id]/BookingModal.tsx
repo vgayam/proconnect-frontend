@@ -9,7 +9,7 @@
 // =============================================================================
 
 import { useState } from "react";
-import { X, Calendar, Clock, User, Mail, Phone, CheckCircle, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { X, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 
 interface BookingModalProps {
   professionalId: string | number;
@@ -39,10 +39,11 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
   const [step, setStep] = useState<"pick" | "form" | "otp" | "done">("pick");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [name, setName]   = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [note, setNote]   = useState("");
+  const [name, setName]       = useState("");
+  const [email, setEmail]     = useState("");
+  const [phone, setPhone]     = useState("");
+  const [address, setAddress] = useState("");
+  const [note, setNote]       = useState("");
   const [otp, setOtp]     = useState("");
   const [sending, setSending]     = useState(false); // sending OTP
   const [submitting, setSubmitting] = useState(false);
@@ -53,7 +54,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
   function handleClose() {
     setStep("pick");
     setSelectedDate(""); setSelectedTime("");
-    setName(""); setEmail(""); setPhone(""); setNote(""); setOtp("");
+    setName(""); setEmail(""); setPhone(""); setAddress(""); setNote(""); setOtp("");
     setError("");
     onClose();
   }
@@ -61,7 +62,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
   /** Step 2 → 3: send OTP */
   async function handleRequestOtp(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) { setError("Name and email are required."); return; }
+    if (!name.trim() || !email.trim() || !address.trim()) { setError("Name, email and address are required."); return; }
     setError("");
     setSending(true);
     try {
@@ -92,11 +93,12 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           professionalId,
-          customerName:  name.trim(),
-          customerEmail: email.trim(),
-          customerPhone: phone.trim() || null,
-          preferredDate: selectedDate,
-          preferredTime: selectedTime,
+          customerName:    name.trim(),
+          customerEmail:   email.trim(),
+          customerPhone:   phone.trim() || null,
+          customerAddress: address.trim() || null,
+          preferredDate:   selectedDate,
+          preferredTime:   selectedTime,
           note: note.trim() || null,
           otp: otp.trim(),
         }),
@@ -261,6 +263,16 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
                 <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
                   className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <MapPin className="inline h-3.5 w-3.5 mr-1" />Your address <span className="text-red-500">*</span>
+                </label>
+                <input type="text" required value={address} onChange={e => setAddress(e.target.value)}
+                  placeholder="123 Main St, Hyderabad, Telangana"
+                  className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400" />
+                <p className="text-xs text-gray-400 mt-1">So the professional knows where to come</p>
               </div>
 
               <div>

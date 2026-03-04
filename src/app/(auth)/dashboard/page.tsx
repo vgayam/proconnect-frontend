@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
-import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { useBookingStream } from '@/hooks/useBookingStream';
+import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock, CheckCircle, XCircle, MapPin, Bell } from 'lucide-react';
 
 interface Booking {
   id: number;
   customerName: string;
   customerEmail: string;
   customerPhone?: string;
+  customerAddress?: string;
   preferredDate?: string;
   preferredTime?: string;
   note?: string;
@@ -35,19 +35,38 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [copied, setCopied] = useState(false);
+  const [newBookingAlert, setNewBookingAlert] = useState(false);
+  const bookingCountRef = useRef<number | null>(null);
 
-  // Real-time: add new bookings to the top of the list as they arrive
-  useBookingStream(
-    !!me,
-    useCallback((newBooking) => {
-      setBookings((prev) => {
-        if (!prev) return [newBooking];
-        // Avoid duplicates (e.g. if initial fetch already included it)
-        if (prev.some((b) => b.id === newBooking.id)) return prev;
-        return [newBooking, ...prev];
-      });
-    }, [])
-  );
+  // Smart polling: every 10s when tab is visible, paused when hidden
+  useEffect(() => {
+    if (!me) return;
+    let interval: ReturnType<typeof setInterval>;
+
+    function poll() {
+      if (document.hidden) return; // skip when tab not visible
+      fetch('/api/professionals/me/bookings')
+        .then((r) => r.ok ? r.json() : [])
+        .then((d: Booking[]) => {
+          if (!Array.isArray(d)) return;
+          setBookings(d);
+          // Show alert badge if count increased since last poll
+          if (bookingCountRef.current !== null && d.length > bookingCountRef.current) {
+            setNewBookingAlert(true);
+          }
+          bookingCountRef.current = d.length;
+        })
+        .catch(() => {});
+    }
+
+    poll(); // immediate on mount
+    interval = setInterval(poll, 10_000);
+    document.addEventListener('visibilitychange', poll);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', poll);
+    };
+  }, [me]);
 
   useEffect(() => {
     getMe().then((profile) => {
@@ -64,10 +83,6 @@ export default function DashboardPage() {
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d) setStats(d); })
       .catch(() => {});
-    fetch('/api/professionals/me/bookings')
-      .then((r) => r.ok ? r.json() : [])
-      .then((d) => setBookings(Array.isArray(d) ? d : []))
-      .catch(() => setBookings([]));
   }, [me]);
 
   async function handleToggle() {
@@ -303,13 +318,24 @@ export default function DashboardPage() {
 
         {/* ── Bookings section (full width) ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6">
-          <h2 className="text-base font-bold text-gray-800 mb-5 flex items-center gap-2">
+          <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
             <CalendarDays className="h-5 w-5 text-primary-500" />
             Booking Requests
             {bookings && bookings.length > 0 && (
               <span className="ml-auto text-xs font-medium text-gray-400">{bookings.length} total</span>
             )}
           </h2>
+
+          {newBookingAlert && (
+            <div
+              onClick={() => setNewBookingAlert(false)}
+              className="flex items-center gap-2 mb-4 px-4 py-2.5 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 cursor-pointer select-none"
+            >
+              <Bell className="h-4 w-4 shrink-0" />
+              <span className="font-medium">New booking received!</span>
+              <span className="ml-auto text-xs text-green-500">Dismiss</span>
+            </div>
+          )}
 
           {bookings === null ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -390,6 +416,12 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
                           <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
                           <a href={`tel:${b.customerPhone}`} className="hover:text-primary-600 transition">{b.customerPhone}</a>
+                        </div>
+                      )}
+                      {b.customerAddress && (
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+                          <span>{b.customerAddress}</span>
                         </div>
                       )}
                       {(b.preferredDate || b.preferredTime) && (
