@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
-import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock } from 'lucide-react';
+import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock, CheckCircle, XCircle, Mail } from 'lucide-react';
 
 interface Booking {
   id: number;
@@ -14,6 +14,7 @@ interface Booking {
   preferredDate?: string;
   preferredTime?: string;
   note?: string;
+  status: string;
   createdAt: string;
 }
 
@@ -74,6 +75,19 @@ export default function DashboardPage() {
   async function handleSignOut() {
     await logout();
     router.push('/');
+  }
+
+  async function handleBookingStatus(id: number, status: 'ACCEPTED' | 'REJECTED') {
+    const res = await fetch(`/api/booking/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setBookings((prev) =>
+        prev ? prev.map((b) => (b.id === id ? { ...b, status } : b)) : prev
+      );
+    }
   }
 
   function handleCopyLink() {
@@ -252,7 +266,7 @@ export default function DashboardPage() {
           {bookings === null ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+                <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : bookings.length === 0 ? (
@@ -260,22 +274,86 @@ export default function DashboardPage() {
               No booking requests yet. Share your profile to get started!
             </p>
           ) : (
-            <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-              {bookings.slice().reverse().map((b) => (
-                <div key={b.id} className="p-3 rounded-xl border border-gray-100 bg-gray-50 text-sm">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-semibold text-gray-900 truncate">{b.customerName}</span>
-                    {b.preferredDate && b.preferredTime && (
-                      <span className="flex items-center gap-1 text-xs text-primary-600 font-medium bg-primary-50 px-2 py-0.5 rounded-full shrink-0">
-                        <Clock className="h-3 w-3" />
-                        {b.preferredDate} {b.preferredTime}
+            <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+              {bookings.slice().reverse().map((b) => {
+                const isPending  = b.status === 'PENDING';
+                const isAccepted = b.status === 'ACCEPTED';
+                const isRejected = b.status === 'REJECTED';
+                return (
+                  <div
+                    key={b.id}
+                    className={`p-4 rounded-xl border text-sm transition ${
+                      isAccepted ? 'border-green-200 bg-green-50' :
+                      isRejected ? 'border-red-100 bg-red-50' :
+                      'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <span className="font-semibold text-gray-900 truncate">{b.customerName}</span>
+                      {/* Status badge */}
+                      {isAccepted && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full shrink-0">
+                          <CheckCircle className="h-3 w-3" /> Accepted
+                        </span>
+                      )}
+                      {isRejected && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-100 px-2 py-0.5 rounded-full shrink-0">
+                          <XCircle className="h-3 w-3" /> Rejected
+                        </span>
+                      )}
+                      {isPending && (
+                        <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Contact info */}
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500 mb-2">
+                      <span className="flex items-center gap-1">
+                        <Mail className="h-3 w-3" /> {b.customerEmail}
                       </span>
+                      {b.customerPhone && (
+                        <span className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" /> {b.customerPhone}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Date/time */}
+                    {(b.preferredDate || b.preferredTime) && (
+                      <div className="flex items-center gap-1 text-xs text-primary-600 font-medium mb-2">
+                        <Clock className="h-3 w-3" />
+                        {b.preferredDate}{b.preferredDate && b.preferredTime ? ' · ' : ''}{b.preferredTime}
+                      </div>
+                    )}
+
+                    {/* Note */}
+                    {b.note && (
+                      <p className="text-xs text-gray-400 italic mb-3">&ldquo;{b.note}&rdquo;</p>
+                    )}
+
+                    {/* Accept / Reject buttons — only for PENDING */}
+                    {isPending && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={() => handleBookingStatus(b.id, 'ACCEPTED')}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition"
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" /> Accept
+                        </button>
+                        <button
+                          onClick={() => handleBookingStatus(b.id, 'REJECTED')}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-1.5 border border-red-300 hover:bg-red-50 text-red-600 text-xs font-semibold rounded-lg transition"
+                        >
+                          <XCircle className="h-3.5 w-3.5" /> Reject
+                        </button>
+                      </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 truncate">{b.customerEmail}{b.customerPhone ? ` · ${b.customerPhone}` : ''}</p>
-                  {b.note && <p className="text-xs text-gray-400 mt-1 italic truncate">&ldquo;{b.note}&rdquo;</p>}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
