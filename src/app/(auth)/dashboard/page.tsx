@@ -68,6 +68,30 @@ export default function DashboardPage() {
     };
   }, [me]);
 
+  // Background GPS update — push professional's live location every 60s
+  useEffect(() => {
+    if (!me) return;
+    if (!navigator.geolocation) return;
+
+    function pushLocation() {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          fetch('/api/professionals/me/location', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: coords.latitude, lng: coords.longitude }),
+          }).catch(() => {});
+        },
+        () => {}, // silently ignore permission denied / unavailable
+        { timeout: 10_000, maximumAge: 60_000 }
+      );
+    }
+
+    pushLocation(); // run once immediately on login
+    const interval = setInterval(pushLocation, 60_000);
+    return () => clearInterval(interval);
+  }, [me]);
+
   useEffect(() => {
     getMe().then((profile) => {
       if (!profile) { router.push('/login'); return; }
