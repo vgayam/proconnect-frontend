@@ -127,6 +127,7 @@ function ModernSearchBarInner() {
     if (nearMeActive && nearMeCoords) {
       params.set("lat", String(nearMeCoords.lat));
       params.set("lng", String(nearMeCoords.lng));
+      params.set("radius", "3");
     } else if (loc.trim()) {
       params.set("location", loc.trim());
     }
