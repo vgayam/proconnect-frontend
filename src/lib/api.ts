@@ -24,6 +24,12 @@ export async function getProfessionals(params?: SearchParams): Promise<Professio
     if (params?.skills && params.skills.length > 0) {
       query.set('skills', params.skills.join(','));
     }
+    // Geo / radius search
+    if (params?.lat !== undefined && params?.lng !== undefined) {
+      query.set('lat', String(params.lat));
+      query.set('lng', String(params.lng));
+      if (params?.radius !== undefined) query.set('radius', String(params.radius));
+    }
     
     const url = `${API_URL}/api/professionals${query.toString() ? `?${query}` : ''}`;
     const response = await fetch(url, {

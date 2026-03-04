@@ -132,6 +132,11 @@ export interface SearchParams {
   page?: number;
   limit?: number;
   pageSize?: number; // Backend expects pageSize
+  /** Geo / radius search — pass searcher's coordinates */
+  lat?: number;
+  lng?: number;
+  /** Radius in km — defaults to 50 on backend */
+  radius?: number;
 }
 
 export type SortOption =

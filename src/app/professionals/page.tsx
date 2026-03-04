@@ -17,6 +17,9 @@ interface SearchPageProps {
     subcategories?: string;
     skills?: string;
     sort?: string;
+    lat?: string;
+    lng?: string;
+    radius?: string;
   }>;
 }
 
@@ -28,13 +31,19 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
   const subcategories = resolvedParams.subcategories?.split(",").filter(Boolean) || [];
   const skills = resolvedParams.skills?.split(",").filter(Boolean) || [];
   const sort = resolvedParams.sort || "relevance";
+  const lat = resolvedParams.lat ? parseFloat(resolvedParams.lat) : undefined;
+  const lng = resolvedParams.lng ? parseFloat(resolvedParams.lng) : undefined;
+  const radius = resolvedParams.radius ? parseFloat(resolvedParams.radius) : undefined;
 
   // Fetch professionals — backend defaults available=true, so unavailable are always excluded
   let professionals = await getProfessionals({
     query: query || undefined,
     category: category || undefined,
-    location: location || undefined,
+    location: (!lat && location) ? location : undefined, // skip city if using geo
     skills: [...skills, ...subcategories].length > 0 ? [...skills, ...subcategories] : undefined,
+    lat,
+    lng,
+    radius,
   });
 
   // Apply sort
@@ -81,7 +90,7 @@ export default async function ProfessionalsPage({ searchParams }: SearchPageProp
                   Showing <span className="font-semibold">{professionals.length}</span>{" "}
                   professional{professionals.length !== 1 ? "s" : ""}
                   {category && <> in <span className="font-semibold text-primary-600">{category}</span></>}
-                  {location && <> near <span className="font-semibold text-primary-600">{location}</span></>}
+                  {lat && lng ? <> <span className="font-semibold text-primary-600">near you</span></> : location && <> near <span className="font-semibold text-primary-600">{location}</span></>}
                   {query && <> for &ldquo;<span className="font-semibold">{query}</span>&rdquo;</>}
                 </>
               )}
