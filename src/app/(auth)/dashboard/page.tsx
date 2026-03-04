@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
 import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useBookingStream } from '@/hooks/useBookingStream';
 
 interface Booking {
   id: number;
@@ -34,6 +35,19 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Real-time: add new bookings to the top of the list as they arrive
+  useBookingStream(
+    !!me,
+    useCallback((newBooking) => {
+      setBookings((prev) => {
+        if (!prev) return [newBooking];
+        // Avoid duplicates (e.g. if initial fetch already included it)
+        if (prev.some((b) => b.id === newBooking.id)) return prev;
+        return [newBooking, ...prev];
+      });
+    }, [])
+  );
 
   useEffect(() => {
     getMe().then((profile) => {
