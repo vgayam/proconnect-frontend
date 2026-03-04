@@ -238,11 +238,13 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
 
                   {/* CTA */}
                   <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
-                    <ContactButton professional={professional} />
-                    <BookingButton
-                      professionalId={professional.id}
-                      professionalName={displayName ?? `${firstName} ${lastName}`}
-                    />
+                    <div className="flex items-center gap-2">
+                      <ContactButton professional={professional} />
+                      <BookingButton
+                        professionalId={professional.id}
+                        professionalName={displayName ?? `${firstName} ${lastName}`}
+                      />
+                    </div>
                     {hourlyRate && (
                       <div className="text-center text-sm text-gray-500">
                         From{" "}

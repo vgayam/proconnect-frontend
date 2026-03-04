@@ -17,10 +17,10 @@ export function BookingButton({ professionalId, professionalName }: BookingButto
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center gap-2 w-full px-5 py-2.5 bg-white border border-primary-300 hover:bg-primary-50 text-primary-700 text-sm font-semibold rounded-xl transition"
+        className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-white border border-primary-300 hover:bg-primary-50 text-primary-700 text-sm font-semibold rounded-xl transition whitespace-nowrap"
       >
-        <CalendarDays className="h-4 w-4" />
-        Book a 1-hour slot
+        <CalendarDays className="h-4 w-4 shrink-0" />
+        Book
       </button>
 
       <BookingModal

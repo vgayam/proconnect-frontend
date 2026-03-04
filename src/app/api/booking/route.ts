@@ -11,24 +11,31 @@ export async function POST(req: NextRequest) {
   }
 
   // POST to backend inquiry endpoint (reuses existing BookingInquiry entity)
-  const res = await fetch(`${API_URL}/api/inquiries/professionals/${professionalId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name:  customerName,
-      email: customerEmail,
-      phone: customerPhone ?? null,
-      preferredDate,
-      preferredTime,
-      note: note ?? null,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/api/inquiries/professionals/${professionalId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:  customerName,
+        email: customerEmail,
+        phone: customerPhone ?? null,
+        preferredDate,
+        preferredTime,
+        note: note ?? null,
+      }),
+    });
+  } catch (fetchErr) {
+    console.error('[booking] fetch to backend failed:', fetchErr);
+    return NextResponse.json({ message: 'Could not reach booking service. Please try again.' }, { status: 502 });
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    return NextResponse.json({ message: err.message || 'Booking failed' }, { status: res.status });
+    console.error('[booking] backend error:', res.status, err);
+    return NextResponse.json({ message: err.message || `Booking failed (${res.status})` }, { status: res.status });
   }
 
-  const data = await res.json();
+  const data = await res.json().catch(() => ({ ok: true }));
   return NextResponse.json(data);
 }
