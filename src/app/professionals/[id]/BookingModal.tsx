@@ -50,6 +50,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
   const [error, setError] = useState("");
   const [geoLoading, setGeoLoading] = useState(false);
   const geocodedRef = useRef(false); // only auto-fill once per open
+  const coordsRef = useRef<{ lat: number; lng: number } | null>(null); // store raw coords
 
   // When the customer reaches the form step, auto-fill their address from GPS
   useEffect(() => {
@@ -58,6 +59,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
     setGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
+        coordsRef.current = { lat: coords.latitude, lng: coords.longitude };
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
@@ -88,6 +90,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
     setGeoLoading(true);
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
+        coordsRef.current = { lat: coords.latitude, lng: coords.longitude };
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
@@ -122,6 +125,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
     setError("");
     setGeoLoading(false);
     geocodedRef.current = false;
+    coordsRef.current = null;
     onClose();
   }
 
@@ -163,6 +167,8 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
           customerEmail:   email.trim(),
           customerPhone:   phone.trim() || null,
           customerAddress: address.trim() || null,
+          customerLat:     coordsRef.current?.lat ?? null,
+          customerLng:     coordsRef.current?.lng ?? null,
           preferredDate:   selectedDate,
           preferredTime:   selectedTime,
           note: note.trim() || null,
