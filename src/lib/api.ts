@@ -110,23 +110,30 @@ export async function getProfessionalByIdOrSlug(idOrSlug: string): Promise<Profe
 }
 
 /**
+ * Get all subcategories (skills) — used for specialization pickers
+ * Each subcategory has { id, name, category } where category is the parent name
+ */
+export async function getSubcategories(): Promise<Skill[]> {
+  try {
+    const response = await fetch(`${API_URL}/api/subcategories`, {
+      next: { revalidate: 3600 },
+    });
+    if (!response.ok) {
+      console.error('Error fetching subcategories:', response.status, response.statusText);
+      return [];
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    return [];
+  }
+}
+
+/**
  * Get all skills
  */
 export async function getSkills(): Promise<Skill[]> {
-  try {
-    const response = await fetch(`${API_URL}/api/skills`, {
-      next: { revalidate: 3600 }, // 1 hour — skills rarely change
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch skills: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching skills:', error);
-    throw error;
-  }
+  return getSubcategories();
 }
 
 /**
