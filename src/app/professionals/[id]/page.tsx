@@ -243,6 +243,7 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                       <BookingButton
                         professionalId={professional.id}
                         professionalName={displayName ?? `${firstName} ${lastName}`}
+                        services={services ?? []}
                       />
                     </div>
                     {hourlyRate && (

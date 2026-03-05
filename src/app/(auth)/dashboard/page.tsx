@@ -130,7 +130,7 @@ export default function DashboardPage() {
     router.push('/');
   }
 
-  async function handleBookingStatus(id: number, status: 'ACCEPTED' | 'REJECTED') {
+  async function handleBookingStatus(id: number, status: 'ACCEPTED' | 'REJECTED' | 'COMPLETED') {
     const res = await fetch(`/api/booking/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -376,9 +376,11 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {bookings.map((b) => {
-                const isPending  = b.status === 'PENDING';
-                const isAccepted = b.status === 'ACCEPTED';
-                const isRejected = b.status === 'REJECTED';
+                const isPending    = b.status === 'PENDING';
+                const isAccepted   = b.status === 'ACCEPTED';
+                const isRejected   = b.status === 'REJECTED';
+                const isCompleted  = b.status === 'COMPLETED';
+                const isCancelled  = b.status === 'CANCELLED';
 
                 // Initials for the booking customer
                 const customerInitials = (b.customerName ?? '')
@@ -392,23 +394,29 @@ export default function DashboardPage() {
                   <div
                     key={b.id}
                     className={`relative flex flex-col gap-3 p-5 rounded-2xl border text-sm transition-shadow hover:shadow-md ${
-                      isAccepted ? 'border-green-200 bg-gradient-to-br from-green-50 to-white' :
-                      isRejected ? 'border-red-100 bg-gradient-to-br from-red-50 to-white' :
+                      isAccepted  ? 'border-green-200 bg-gradient-to-br from-green-50 to-white' :
+                      isRejected  ? 'border-red-100 bg-gradient-to-br from-red-50 to-white' :
+                      isCompleted ? 'border-blue-100 bg-gradient-to-br from-blue-50 to-white' :
+                      isCancelled ? 'border-gray-300 bg-gradient-to-br from-gray-100 to-white opacity-70' :
                       'border-gray-200 bg-gradient-to-br from-gray-50 to-white'
                     }`}
                   >
                     {/* Status stripe */}
                     <div className={`absolute top-0 left-0 w-1 h-full rounded-l-2xl ${
-                      isAccepted ? 'bg-green-400' :
-                      isRejected ? 'bg-red-300' :
+                      isAccepted  ? 'bg-green-400' :
+                      isRejected  ? 'bg-red-300' :
+                      isCompleted ? 'bg-blue-400' :
+                      isCancelled ? 'bg-gray-400' :
                       'bg-amber-300'
                     }`} />
 
                     {/* Header: avatar + name + badge */}
                     <div className="flex items-center gap-3 pl-2">
                       <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                        isAccepted ? 'bg-green-500' :
-                        isRejected ? 'bg-gray-400' :
+                        isAccepted  ? 'bg-green-500' :
+                        isRejected  ? 'bg-gray-400' :
+                        isCompleted ? 'bg-blue-500' :
+                        isCancelled ? 'bg-gray-300' :
                         'bg-primary-500'
                       }`}>
                         {customerInitials}
@@ -430,6 +438,16 @@ export default function DashboardPage() {
                       {isRejected && (
                         <span className="flex items-center gap-1 text-xs font-semibold text-red-500 bg-red-100 px-2 py-0.5 rounded-full shrink-0">
                           <XCircle className="h-3 w-3" /> Rejected
+                        </span>
+                      )}
+                      {isCompleted && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full shrink-0">
+                          <CheckCircle className="h-3 w-3" /> Completed
+                        </span>
+                      )}
+                      {isCancelled && (
+                        <span className="flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full shrink-0">
+                          <XCircle className="h-3 w-3" /> Cancelled
                         </span>
                       )}
                     </div>
@@ -475,6 +493,18 @@ export default function DashboardPage() {
                           className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold rounded-xl transition"
                         >
                           <XCircle className="h-3.5 w-3.5" /> Reject
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Mark Complete */}
+                    {isAccepted && (
+                      <div className="pl-2 pt-1">
+                        <button
+                          onClick={() => handleBookingStatus(b.id, 'COMPLETED')}
+                          className="w-full flex items-center justify-center gap-1.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition"
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" /> Mark Complete
                         </button>
                       </div>
                     )}

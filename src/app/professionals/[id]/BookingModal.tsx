@@ -9,11 +9,13 @@
 // =============================================================================
 
 import { useState, useEffect, useRef } from "react";
-import { X, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, Loader2, AlertCircle, ShieldCheck, LocateFixed } from "lucide-react";
+import { X, Calendar, Clock, User, Mail, Phone, MapPin, CheckCircle, Loader2, AlertCircle, ShieldCheck, LocateFixed, Briefcase } from "lucide-react";
+import type { Service } from "@/types";
 
 interface BookingModalProps {
   professionalId: string | number;
   professionalName: string;
+  services: Service[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -35,10 +37,11 @@ function buildSlots() {
 
 const SLOTS = buildSlots();
 
-export function BookingModal({ professionalId, professionalName, isOpen, onClose }: BookingModalProps) {
+export function BookingModal({ professionalId, professionalName, services, isOpen, onClose }: BookingModalProps) {
   const [step, setStep] = useState<"pick" | "form" | "otp" | "done">("pick");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [selectedService, setSelectedService] = useState<number | null>(null);
   const [name, setName]       = useState("");
   const [email, setEmail]     = useState("");
   const [phone, setPhone]     = useState("");
@@ -169,6 +172,7 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
           customerAddress: address.trim() || null,
           customerLat:     coordsRef.current?.lat ?? null,
           customerLng:     coordsRef.current?.lng ?? null,
+          serviceId:       selectedService,
           preferredDate:   selectedDate,
           preferredTime:   selectedTime,
           note: note.trim() || null,
@@ -309,6 +313,27 @@ export function BookingModal({ professionalId, professionalName, isOpen, onClose
                   <button type="button" onClick={() => setStep("pick")} className="ml-2 text-xs underline text-primary-500">change</button>
                 </span>
               </div>
+
+              {/* Service selector (if professional has services) */}
+              {services && services.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <Briefcase className="inline h-3.5 w-3.5 mr-1" />Service <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <select
+                    value={selectedService ?? ""}
+                    onChange={(e) => setSelectedService(e.target.value ? Number(e.target.value) : null)}
+                    className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400"
+                  >
+                    <option value="">Select a service (optional)</option>
+                    {services.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.title} {s.priceRange ? `— ₹${s.priceRange.min.toLocaleString()}${s.priceRange.max ? `-${s.priceRange.max.toLocaleString()}` : '+'}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

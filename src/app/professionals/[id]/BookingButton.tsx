@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { BookingModal } from "./BookingModal";
+import type { Service } from "@/types";
 
 interface BookingButtonProps {
   professionalId: string | number;
   professionalName: string;
+  services: Service[];
 }
 
-export function BookingButton({ professionalId, professionalName }: BookingButtonProps) {
+export function BookingButton({ professionalId, professionalName, services }: BookingButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -26,6 +28,7 @@ export function BookingButton({ professionalId, professionalName }: BookingButto
       <BookingModal
         professionalId={professionalId}
         professionalName={professionalName}
+        services={services}
         isOpen={open}
         onClose={() => setOpen(false)}
       />
