@@ -2,7 +2,7 @@
 // Used by ListServiceForm.
 
 import { useEffect, useState } from 'react';
-import { getSkills, getSkillCategories } from '@/lib/api';
+import { getSkills, getCategories } from '@/lib/api';
 import { Skill } from '@/types';
 
 interface ServiceCategoriesState {
@@ -51,13 +51,16 @@ export function useServiceCategories() {
 
     async function fetchData() {
       try {
-        const [subcategories, categories] = await Promise.all([
+        const [subcategories, rawCategories] = await Promise.all([
           getSkills(),
-          getSkillCategories()
+          getCategories()
         ]);
 
+        // Extract just the category names from the Category objects
+        const categories = rawCategories.map((c) => c.name);
+
         // Group subcategories by parent category
-        const grouped = subcategories.reduce((acc: { [key: string]: string[] }, subcategory) => {
+        const grouped = subcategories.reduce((acc: { [key: string]: string[] }, subcategory: Skill) => {
           const category = subcategory.category || 'Other';
           if (!acc[category]) {
             acc[category] = [];
@@ -68,7 +71,7 @@ export function useServiceCategories() {
 
         const subcategoriesByCategory = Object.entries(grouped).map(([category, names]) => ({
           category,
-          subcategories: names.sort()
+          subcategories: (names as string[]).sort()
         }));
 
         const newState = {
