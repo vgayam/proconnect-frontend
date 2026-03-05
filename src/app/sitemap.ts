@@ -14,17 +14,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let professionals: SitemapProfessional[] = [];
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5s max — don't stall the build
     const res = await fetch(
       `${API_URL}/api/professionals?pageSize=1000&available=true`,
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 3600 }, signal: controller.signal }
     );
+    clearTimeout(timeout);
     if (res.ok) {
       const data = await res.json();
       const list: SitemapProfessional[] = Array.isArray(data) ? data : (data.results ?? []);
       professionals = list;
     }
   } catch {
-    // silently fall back to static URLs only
+    // silently fall back to static URLs only (backend unavailable at build time)
   }
 
   const staticRoutes: MetadataRoute.Sitemap = [
