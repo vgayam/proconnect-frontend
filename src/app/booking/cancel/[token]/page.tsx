@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
 
-export default function CancelBookingPage({ params }: { params: { token: string } }) {
+export default function CancelBookingPage({ params }: { params: Promise<{ token: string }> }) {
   const router = useRouter();
+  const { token } = use(params);
   const [status, setStatus] = useState<"loading" | "confirm" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
   const [cancelling, setCancelling] = useState(false);
@@ -15,7 +16,7 @@ export default function CancelBookingPage({ params }: { params: { token: string 
     // Validate token on load
     async function checkToken() {
       try {
-        const res = await fetch(`/api/booking/cancel/${params.token}`);
+        const res = await fetch(`/api/booking/cancel/${token}`);
         if (res.ok) {
           setStatus("confirm");
         } else {
@@ -28,12 +29,12 @@ export default function CancelBookingPage({ params }: { params: { token: string 
       }
     }
     checkToken();
-  }, [params.token]);
+  }, [token]);
 
   async function handleCancel() {
     setCancelling(true);
     try {
-      const res = await fetch(`/api/booking/cancel/${params.token}`, {
+      const res = await fetch(`/api/booking/cancel/${token}`, {
         method: "POST",
       });
 
