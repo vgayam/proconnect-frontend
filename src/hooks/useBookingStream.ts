@@ -14,14 +14,28 @@ interface Booking {
   createdAt: string;
 }
 
+export interface BroadcastJob {
+  id: number;
+  customerName: string;
+  category: string;
+  description: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
 /**
  * Opens an SSE connection to /api/professionals/me/bookings/stream
- * and calls onNewBooking whenever a new booking arrives.
+ * and calls onNewBooking / onNewJob whenever events arrive.
  * Automatically reconnects on disconnect (EventSource handles this natively).
  */
 export function useBookingStream(
   enabled: boolean,
-  onNewBooking: (booking: Booking) => void
+  onNewBooking: (booking: Booking) => void,
+  onNewJob?: (job: BroadcastJob) => void
 ) {
   useEffect(() => {
     if (!enabled) return;
@@ -37,6 +51,17 @@ export function useBookingStream(
       }
     });
 
+    // New: broadcast job events — only handled if caller passes onNewJob
+    es.addEventListener('new-job', (e) => {
+      if (!onNewJob) return;
+      try {
+        const job: BroadcastJob = JSON.parse(e.data);
+        onNewJob(job);
+      } catch {
+        // malformed event — ignore
+      }
+    });
+
     es.onerror = () => {
       // EventSource auto-reconnects after error — no action needed
     };
@@ -44,5 +69,5 @@ export function useBookingStream(
     return () => {
       es.close();
     };
-  }, [enabled, onNewBooking]);
+  }, [enabled, onNewBooking, onNewJob]);
 }

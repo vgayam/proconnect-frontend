@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getMe, logout, type AuthProfessional } from '@/lib/auth';
-import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock, CheckCircle, XCircle, MapPin, Bell } from 'lucide-react';
+import { Pencil, Eye, LogOut, Loader2, Phone, Users, Copy, Check, Share2, CalendarDays, Clock, CheckCircle, XCircle, MapPin, Bell, Zap } from 'lucide-react';
+import { useBookingStream, type BroadcastJob } from '@/hooks/useBookingStream';
 
 interface Booking {
   id: number;
@@ -34,6 +35,8 @@ export default function DashboardPage() {
   const [toggling, setToggling] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [bookings, setBookings] = useState<Booking[] | null>(null);
+  const [broadcastJobs, setBroadcastJobs] = useState<BroadcastJob[]>([]);
+  const [acceptingJobId, setAcceptingJobId] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [newBookingAlert, setNewBookingAlert] = useState(false);
   const bookingCountRef = useRef<number | null>(null);
@@ -140,6 +143,50 @@ export default function DashboardPage() {
       setBookings((prev) =>
         prev ? prev.map((b) => (b.id === id ? { ...b, status } : b)) : prev
       );
+    }
+  }
+
+  // SSE: receive real-time new-booking and new-job events
+  const handleNewBookingSSE = useCallback((booking: Booking) => {
+    setBookings((prev) => {
+      if (!prev) return [booking];
+      if (prev.some((b) => b.id === booking.id)) return prev;
+      setNewBookingAlert(true);
+      return [booking, ...prev];
+    });
+  }, []);
+
+  const handleNewJobSSE = useCallback((job: BroadcastJob) => {
+    setBroadcastJobs((prev) => {
+      if (prev.some((j) => j.id === job.id)) return prev;
+      return [job, ...prev];
+    });
+  }, []);
+
+  useBookingStream(!!me, handleNewBookingSSE, handleNewJobSSE);
+
+  async function handleAcceptJob(jobId: number) {
+    if (!me || acceptingJobId === jobId) return;
+    setAcceptingJobId(jobId);
+    try {
+      const res = await fetch(`/api/job/${jobId}/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ professionalId: me.id }),
+      });
+      if (res.ok) {
+        // Remove from the list — job is taken
+        setBroadcastJobs((prev) => prev.filter((j) => j.id !== jobId));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.message || 'Could not accept this job. It may have already been taken.');
+        // Also remove from list — no point showing it
+        setBroadcastJobs((prev) => prev.filter((j) => j.id !== jobId));
+      }
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setAcceptingJobId(null);
     }
   }
 
@@ -339,6 +386,48 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {/* ── Broadcast Jobs section ── */}
+        {broadcastJobs.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-primary-100 px-6 py-6">
+            <h2 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-500" />
+              Nearby Job Requests
+              <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">
+                {broadcastJobs.length}
+              </span>
+              <span className="ml-auto text-xs text-gray-400 font-normal">First to accept gets the job</span>
+            </h2>
+            <div className="space-y-3">
+              {broadcastJobs.map((job) => (
+                <div key={job.id} className="flex items-start justify-between gap-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-gray-800">{job.customerName}</span>
+                      <span className="text-xs px-2 py-0.5 bg-primary-100 text-primary-700 rounded-full font-medium">{job.category}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{job.description}</p>
+                    {job.address && (
+                      <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />{job.address}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleAcceptJob(job.id)}
+                    disabled={acceptingJobId === job.id}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold rounded-lg transition disabled:opacity-60"
+                  >
+                    {acceptingJobId === job.id
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <CheckCircle className="h-4 w-4" />}
+                    Accept
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Bookings section (full width) ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6">

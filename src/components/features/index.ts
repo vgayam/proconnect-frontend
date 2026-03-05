@@ -11,3 +11,5 @@ export { SocialLinks } from "./SocialLinks";
 export type { SocialLinksProps } from "./SocialLinks";
 
 export { ModernSearchBar } from "./ModernSearchBar";
+
+export { PostJobModal } from "./PostJobModal";

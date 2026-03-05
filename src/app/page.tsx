@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui";
 import { ModernSearchBar } from "@/components/features";
+import { PostJobButton } from "@/components/features/PostJobButton";
 import { Users, Shield, Zap, Search } from "lucide-react";
 
 export default function HomePage() {
@@ -36,7 +37,8 @@ export default function HomePage() {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex items-center justify-center mt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
+              <PostJobButton />
               <Link href="/list-service" className="text-sm text-gray-500 hover:text-primary-600 transition-colors">
                 Are you a professional? <span className="font-medium text-primary-600 underline underline-offset-2">List your services →</span>
               </Link>
