@@ -18,6 +18,10 @@ interface Booking {
   note?: string;
   status: string;
   createdAt: string;
+  /** "INQUIRY" (direct booking) | "JOB_POST" (broadcast job accepted by this pro) */
+  sourceType?: string;
+  /** The real PK in the source table — use this for cancel/status calls */
+  sourceId?: number;
 }
 
 interface DashboardStats {
@@ -144,15 +148,18 @@ export default function DashboardPage() {
     router.push('/');
   }
 
-  async function handleBookingStatus(id: number, status: 'ACCEPTED' | 'REJECTED' | 'COMPLETED') {
-    const res = await fetch(`/api/booking/${id}/status`, {
+  async function handleBookingStatus(booking: Booking, status: 'ACCEPTED' | 'REJECTED' | 'COMPLETED') {
+    // JOB_POST bookings are already ACCEPTED — only COMPLETED makes sense, but no status endpoint yet
+    if (booking.sourceType === 'JOB_POST') return;
+
+    const res = await fetch(`/api/booking/${booking.id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
     if (res.ok) {
       setBookings((prev) =>
-        prev ? prev.map((b) => (b.id === id ? { ...b, status } : b)) : prev
+        prev ? prev.map((b) => (b.id === booking.id ? { ...b, status } : b)) : prev
       );
     }
   }
@@ -572,17 +579,17 @@ export default function DashboardPage() {
                       )}
                     </div>
 
-                    {/* Accept / Reject */}
-                    {isPending && (
+                    {/* Accept / Reject — only for direct bookings */}
+                    {isPending && b.sourceType !== 'JOB_POST' && (
                       <div className="flex gap-2 pl-2 pt-1">
                         <button
-                          onClick={() => handleBookingStatus(b.id, 'ACCEPTED')}
+                          onClick={() => handleBookingStatus(b, 'ACCEPTED')}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-xl transition"
                         >
                           <CheckCircle className="h-3.5 w-3.5" /> Accept
                         </button>
                         <button
-                          onClick={() => handleBookingStatus(b.id, 'REJECTED')}
+                          onClick={() => handleBookingStatus(b, 'REJECTED')}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2 border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold rounded-xl transition"
                         >
                           <XCircle className="h-3.5 w-3.5" /> Reject
@@ -594,7 +601,7 @@ export default function DashboardPage() {
                     {isAccepted && (
                       <div className="pl-2 pt-1">
                         <button
-                          onClick={() => handleBookingStatus(b.id, 'COMPLETED')}
+                          onClick={() => handleBookingStatus(b, 'COMPLETED')}
                           className="w-full flex items-center justify-center gap-1.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition"
                         >
                           <CheckCircle className="h-3.5 w-3.5" /> Mark Complete
