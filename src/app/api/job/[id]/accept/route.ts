@@ -14,7 +14,7 @@ export async function POST(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
 
   try {
     const res = await fetch(`${API_URL}/api/jobs/${id}/accept`, {

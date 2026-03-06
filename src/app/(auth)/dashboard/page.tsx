@@ -172,7 +172,7 @@ export default function DashboardPage() {
       const res = await fetch(`/api/job/${jobId}/accept`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ professionalId: me.id }),
+        body: JSON.stringify({}),
       });
       if (res.ok) {
         // Remove from the list — job is taken
