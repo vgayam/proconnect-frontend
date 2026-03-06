@@ -10,7 +10,7 @@
 import { useState, useEffect } from "react";
 import {
   X, MapPin, Briefcase, FileText, User, Phone, Mail,
-  Loader2, CheckCircle, AlertCircle, Navigation,
+  Loader2, CheckCircle, AlertCircle, LocateFixed,
 } from "lucide-react";
 import { getCategories, type Category } from "@/lib/api";
 
@@ -267,38 +267,37 @@ export function PostJobModal({ onClose }: Props) {
 
           {/* Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Location <span className="text-red-500">*</span>
-            </label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => set("address", e.target.value)}
-                  placeholder="Address (auto-filled with GPS)"
-                  className={`w-full pl-9 pr-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition
-                    ${fieldErrors.address ? "border-red-400 focus:ring-red-200" : "border-gray-300 focus:ring-primary-200 focus:border-primary-400"}`}
-                />
-              </div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                <MapPin className="inline h-3.5 w-3.5 mr-1" />Your address <span className="text-red-500">*</span>
+              </label>
               <button
                 type="button"
                 onClick={detectLocation}
                 disabled={detectingLoc}
-                className="flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 border border-primary-200 rounded-lg transition disabled:opacity-50"
+                className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 disabled:opacity-50 transition"
               >
                 {detectingLoc
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Navigation className="h-4 w-4" />}
-                {detectingLoc ? "Detecting…" : "Use GPS"}
+                  ? <Loader2 className="h-3 w-3 animate-spin" />
+                  : <LocateFixed className="h-3 w-3" />}
+                {detectingLoc ? "Detecting…" : "Use my location"}
               </button>
             </div>
-            {form.lat && form.lng && (
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <CheckCircle className="h-3 w-3" /> Location captured
-              </p>
-            )}
+            <div className="relative">
+              <input
+                type="text"
+                value={form.address}
+                onChange={(e) => { set("address", e.target.value); setFieldErrors(p => ({ ...p, address: undefined })); }}
+                placeholder={detectingLoc ? "Detecting your location…" : "123 Main St, Bengaluru, Karnataka"}
+                disabled={detectingLoc}
+                className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition disabled:bg-gray-50 disabled:text-gray-400
+                  ${fieldErrors.address ? "border-red-400 focus:ring-red-200" : "border-gray-300 focus:ring-primary-200 focus:border-primary-400"}`}
+              />
+              {detectingLoc && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary-400 animate-spin" />
+              )}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">So the professional knows where to come</p>
             {fieldErrors.address && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />{fieldErrors.address}</p>}
           </div>
 
