@@ -48,6 +48,8 @@ export default function DashboardPage() {
 
     function poll() {
       if (document.hidden) return; // skip when tab not visible
+
+      // Poll bookings
       fetch('/api/professionals/me/bookings')
         .then((r) => r.ok ? r.json() : [])
         .then((d: Booking[]) => {
@@ -58,6 +60,15 @@ export default function DashboardPage() {
             setNewBookingAlert(true);
           }
           bookingCountRef.current = d.length;
+        })
+        .catch(() => {});
+
+      // Poll open broadcast jobs — multi-server safe (reads from DB)
+      fetch('/api/job/open')
+        .then((r) => r.ok ? r.json() : [])
+        .then((jobs: BroadcastJob[]) => {
+          if (!Array.isArray(jobs)) return;
+          setBroadcastJobs(jobs);
         })
         .catch(() => {});
     }
@@ -156,14 +167,7 @@ export default function DashboardPage() {
     });
   }, []);
 
-  const handleNewJobSSE = useCallback((job: BroadcastJob) => {
-    setBroadcastJobs((prev) => {
-      if (prev.some((j) => j.id === job.id)) return prev;
-      return [job, ...prev];
-    });
-  }, []);
-
-  useBookingStream(!!me, handleNewBookingSSE, handleNewJobSSE);
+  useBookingStream(!!me, handleNewBookingSSE);
 
   async function handleAcceptJob(jobId: number) {
     if (!me || acceptingJobId === jobId) return;

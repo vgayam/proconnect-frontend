@@ -29,13 +29,15 @@ export interface BroadcastJob {
 
 /**
  * Opens an SSE connection to /api/professionals/me/bookings/stream
- * and calls onNewBooking / onNewJob whenever events arrive.
+ * and calls onNewBooking whenever a new direct booking arrives.
  * Automatically reconnects on disconnect (EventSource handles this natively).
+ *
+ * Broadcast jobs are no longer delivered via SSE — the dashboard polls
+ * GET /api/job/open every 10 s instead (multi-server safe).
  */
 export function useBookingStream(
   enabled: boolean,
-  onNewBooking: (booking: Booking) => void,
-  onNewJob?: (job: BroadcastJob) => void
+  onNewBooking: (booking: Booking) => void
 ) {
   useEffect(() => {
     if (!enabled) return;
@@ -51,17 +53,6 @@ export function useBookingStream(
       }
     });
 
-    // New: broadcast job events — only handled if caller passes onNewJob
-    es.addEventListener('new-job', (e) => {
-      if (!onNewJob) return;
-      try {
-        const job: BroadcastJob = JSON.parse(e.data);
-        onNewJob(job);
-      } catch {
-        // malformed event — ignore
-      }
-    });
-
     es.onerror = () => {
       // EventSource auto-reconnects after error — no action needed
     };
@@ -69,5 +60,5 @@ export function useBookingStream(
     return () => {
       es.close();
     };
-  }, [enabled, onNewBooking, onNewJob]);
+  }, [enabled, onNewBooking]);
 }
