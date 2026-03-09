@@ -29,7 +29,7 @@ export function ContactButton({ professional, fullWidth = false }: ContactButton
         title="Send a message to ask questions before committing"
       >
         <MessageCircle className="h-5 w-5" />
-        Message
+        Contact Pro
       </Button>
 
       <ContactModal
