@@ -65,7 +65,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="text-center p-6">
+            <div className="text-center p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-100 text-primary-600 mb-4">
                 <Users className="h-7 w-7" />
               </div>
@@ -78,7 +78,7 @@ export default function HomePage() {
             </div>
 
             {/* Feature 2 */}
-            <div className="text-center p-6">
+            <div className="text-center p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-100 text-primary-600 mb-4">
                 <Zap className="h-7 w-7" />
               </div>
@@ -91,7 +91,7 @@ export default function HomePage() {
             </div>
 
             {/* Feature 3 */}
-            <div className="text-center p-6">
+            <div className="text-center p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
               <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-green-100 text-green-600 mb-4">
                 <Shield className="h-7 w-7" />
               </div>

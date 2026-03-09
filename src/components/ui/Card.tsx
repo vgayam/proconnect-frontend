@@ -41,7 +41,7 @@ export function Card({
       className={cn(
         "rounded-xl border border-gray-200 bg-white shadow-sm",
         padded && "p-6",
-        hoverable && "transition-all hover:shadow-md hover:border-gray-300",
+        hoverable && "transition-all hover:shadow-md hover:border-gray-300 hover:-translate-y-0.5",
         onClick && "cursor-pointer text-left w-full",
         className
       )}

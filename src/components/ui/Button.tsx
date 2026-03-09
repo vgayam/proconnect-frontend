@@ -15,7 +15,7 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
  */
 const buttonVariants = cva(
   // Base styles applied to all buttons
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation",
   {
     variants: {
       variant: {
@@ -33,11 +33,11 @@ const buttonVariants = cva(
           "bg-green-600 text-white hover:bg-green-700 active:bg-green-800 shadow-sm",
       },
       size: {
-        sm: "h-8 px-3 text-sm",
-        md: "h-10 px-4 text-sm",
+        sm: "h-9 px-3 text-sm",
+        md: "h-11 px-4 text-sm",
         lg: "h-12 px-6 text-base",
         xl: "h-14 px-8 text-lg",
-        icon: "h-10 w-10",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {

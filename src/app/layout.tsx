@@ -6,9 +6,12 @@ import { Header, Footer } from "@/components/layout";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "ProConnect - Find Skilled Professionals",
+  title: {
+    default: "ProConnect — Find Skilled Professionals Near You",
+    template: "%s | ProConnect",
+  },
   description:
-    "Connect with skilled professionals for your next project. Find experts in development, design, marketing, and more.",
+    "Connect with verified local professionals for any job. Find experts in home services, design, photography, and more — and hire with confidence.",
   keywords: [
     "professionals",
     "freelancers",
@@ -17,7 +20,21 @@ export const metadata: Metadata = {
     "developers",
     "designers",
     "consultants",
+    "home services",
+    "local professionals",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://proconnect.app"),
+  openGraph: {
+    siteName: "ProConnect",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

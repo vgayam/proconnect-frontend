@@ -14,6 +14,7 @@ import { SocialLinks } from "@/components/features";
 import { ContactButton } from "./ContactButton";
 import { ShareButton } from "./ShareButton";
 import { BookingButton } from "./BookingButton";
+import { MobileStickyActions } from "./MobileStickyActions";
 import {
   MapPin,
   Star,
@@ -136,7 +137,7 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
   const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://proconnect.app"}${profilePath}`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-24 md:pb-0">
       {/* Cover Image */}
       <div className="relative h-52 md:h-72 bg-gradient-to-r from-primary-600 to-secondary-600">
         {coverImageUrl && (
@@ -448,6 +449,9 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
           </div>
         </div>
       </div>
+
+      {/* Mobile sticky action bar */}
+      <MobileStickyActions professional={professional} services={services ?? []} />
     </div>
   );
 }

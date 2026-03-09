@@ -100,7 +100,7 @@ export function Header() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-gray-600 hover:text-gray-900"
+            className="md:hidden p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -125,7 +125,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="flex items-center min-h-[44px] py-2 text-sm font-medium text-gray-600 hover:text-gray-900 active:text-primary-600"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {link.label}
