@@ -37,6 +37,11 @@ body {
    UTILITY CLASSES
    ============================================================================= */
 
+/* Safe-area bottom padding for iPhone notch / home indicator */
+.safe-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
 /* Line clamp utilities */
 .line-clamp-1 {
   display: -webkit-box;

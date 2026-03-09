@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Header, Footer } from "@/components/layout";
@@ -35,6 +35,12 @@ export const metadata: Metadata = {
     siteName: "ProConnect",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",  // allows CSS env(safe-area-inset-*) to work on iOS
 };
 
 export default function RootLayout({

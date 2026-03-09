@@ -237,8 +237,8 @@ export default async function ProfessionalProfilePage({ params }: ProfilePagePro
                     </div>
                   </div>
 
-                  {/* CTA */}
-                  <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
+                  {/* CTA — desktop only; mobile uses the fixed bottom bar */}
+                  <div className="hidden md:flex flex-col items-end gap-2 shrink-0">
                     <div className="flex items-center gap-2">
                       <div className="flex flex-col items-center gap-0.5">
                         <ContactButton professional={professional} />
