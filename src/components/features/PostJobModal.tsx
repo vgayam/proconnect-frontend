@@ -10,7 +10,7 @@
 import { useState, useEffect } from "react";
 import {
   X, MapPin, Briefcase, FileText, User, Phone, Mail,
-  Loader2, CheckCircle, AlertCircle, LocateFixed,
+  Loader2, CheckCircle, AlertCircle, LocateFixed, Clock, Shield,
 } from "lucide-react";
 import { getCategories, type Category } from "@/lib/api";
 
@@ -157,16 +157,41 @@ export function PostJobModal({ onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Post a Job</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
-              We&apos;ll broadcast to professionals within 5 km — first to accept gets the job.
-            </p>
+        <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Post a Job</h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Free to post · No sign-up required
+              </p>
+            </div>
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition text-gray-400 shrink-0">
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition text-gray-400">
-            <X className="h-5 w-5" />
-          </button>
+
+          {/* How it works strip */}
+          <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+            <div className="bg-primary-50 rounded-xl p-2.5">
+              <div className="text-lg mb-0.5">📝</div>
+              <p className="text-xs font-medium text-primary-800">Describe the job</p>
+            </div>
+            <div className="bg-primary-50 rounded-xl p-2.5">
+              <div className="text-lg mb-0.5">📍</div>
+              <p className="text-xs font-medium text-primary-800">Share location</p>
+            </div>
+            <div className="bg-primary-50 rounded-xl p-2.5">
+              <div className="text-lg mb-0.5">⚡</div>
+              <p className="text-xs font-medium text-primary-800">Pro responds</p>
+            </div>
+          </div>
+
+          {/* Trust signals */}
+          <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-400">
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Typically &lt; 10 min</span>
+            <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> Verified pros only</span>
+            <span className="flex items-center gap-1">📡 5 km radius</span>
+          </div>
         </div>
 
         <div className="px-6 py-5 space-y-4">

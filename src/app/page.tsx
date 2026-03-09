@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import { ModernSearchBar } from "@/components/features";
 import { PostJobButton } from "@/components/features/PostJobButton";
-import { Users, Shield, Zap, Search } from "lucide-react";
+import { Users, Shield, Zap, Search, ClipboardList, MapPin, Sparkles } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -101,6 +101,62 @@ export default function HomePage() {
               <p className="text-gray-600">
                 Your information is safe. We facilitate connections without hidden fees.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How Post a Job Works Section */}
+      <section className="py-16 lg:py-20 bg-gray-50 border-t border-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-10">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 bg-primary-50 border border-primary-100 rounded-full px-3 py-1 mb-3">
+                <Sparkles className="h-3.5 w-3.5" />
+                New Feature
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+                Need it done fast? Post a Job
+              </h2>
+              <p className="text-lg text-gray-500 max-w-xl mx-auto">
+                Don&apos;t have time to browse? Describe what you need and let nearby professionals come to you.
+              </p>
+            </div>
+
+            {/* Steps */}
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center shadow">1</div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary-50 text-primary-600 mb-4 mt-2">
+                  <ClipboardList className="h-6 w-6" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">Describe the job</h3>
+                <p className="text-sm text-gray-500">Tell us what you need — e.g. "Fix leaking kitchen pipe urgently"</p>
+              </div>
+
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center shadow">2</div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary-50 text-primary-600 mb-4 mt-2">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">Share your location</h3>
+                <p className="text-sm text-gray-500">We use your location to find verified professionals within 5 km</p>
+              </div>
+
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-primary-600 text-white text-sm font-bold flex items-center justify-center shadow">3</div>
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-green-50 text-green-600 mb-4 mt-2">
+                  <Zap className="h-6 w-6" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">A pro accepts &amp; contacts you</h3>
+                <p className="text-sm text-gray-500">The first available professional accepts the job. You get an email instantly.</p>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <div className="text-center">
+              <PostJobButton />
+              <p className="text-xs text-gray-400 mt-3">Free to post · No sign-up required · Typically responds in &lt; 10 min</p>
             </div>
           </div>
         </div>

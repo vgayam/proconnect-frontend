@@ -26,9 +26,10 @@ export function ContactButton({ professional, fullWidth = false }: ContactButton
         size="lg"
         onClick={() => setIsModalOpen(true)}
         className={fullWidth ? "w-full" : ""}
+        title="Send a message to ask questions before committing"
       >
         <MessageCircle className="h-5 w-5" />
-        Contact
+        Message
       </Button>
 
       <ContactModal
